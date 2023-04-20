@@ -10,3 +10,12 @@ type Schedule struct {
 	Branch   Branch    `json:"branch"`
 	Seats    []Seat    `json:"seats"`
 }
+
+type SchedulesResponse struct {
+	Response
+	Schedules []Schedule `json:"data"`
+}
+type ScheduleResponse struct {
+	Response
+	Schedule Schedule `json:"data"`
+}

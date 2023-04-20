@@ -13,3 +13,12 @@ const (
 	Completed PaymentStatus = "Completed"
 	Expired   PaymentStatus = "Expired"
 )
+
+type PaymentResponse struct {
+	Response
+	Payment Payment `json:"data"`
+}
+type PaymentsResponse struct {
+	Response
+	Payments []Payment `json:"data"`
+}
