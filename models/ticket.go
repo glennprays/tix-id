@@ -1,8 +1,8 @@
 package models
 
 type Ticket struct {
-	ID       int      `json:"ID"`
-	Seat     Seat     `json:"Name"`
-	Schedule Schedule `json:"Address"`
-	Payment  Payment  `json:"Theatres"`
+	ID       int      `json:"id"`
+	Seat     Seat     `json:"name"`
+	Schedule Schedule `json:"address"`
+	Payment  Payment  `json:"theatres"`
 }

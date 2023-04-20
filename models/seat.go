@@ -1,8 +1,8 @@
 package models
 
 type Seat struct {
-	ID           int    `json:"ID"`
-	Row          string `json:"Row"`
-	Number       string `json:"Number"`
-	Availability bool   `json:"Availability"`
+	ID           int    `json:"id"`
+	Row          string `json:"row"`
+	Number       string `json:"number"`
+	Availability bool   `json:"availability"`
 }
