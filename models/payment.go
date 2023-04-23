@@ -1,9 +1,9 @@
 package models
 
 type Payment struct {
-	ID     int           `json:"ID"`
-	Amount int           `json:"Amount"`
-	Status PaymentStatus `json:"Status"`
+	ID     int           `json:"id"`
+	Amount int           `json:"amount"`
+	Status PaymentStatus `json:"status"`
 }
 
 type PaymentStatus string

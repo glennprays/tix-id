@@ -10,7 +10,7 @@ import (
 // GetMovies godoc
 // @Summary Get Movies
 // @Description Get All Movies sorted by realse date
-// @Tags Customer/Movie
+// @Tags Guest
 // @Param show_time query string false "Filter movies by show time"
 // @Param branch query string false "Filter movies by branch"
 // @Param rating query string false "Filter movies by rating"
@@ -40,7 +40,7 @@ func GetMovies(c *gin.Context) {
 // SearchMovies godoc
 // @Summary Search movies by title and genre
 // @Description Search movies by title and genre
-// @Tags Customer/Movie
+// @Tags Guest
 // @Accept json
 // @Produce json
 // @Param title query string false "Movie title to search"
@@ -64,7 +64,7 @@ func SearchMovies(c *gin.Context) {
 // GetMovieById godoc
 // @Summary Get a movie by ID
 // @Description Get a movie by ID
-// @Tags Customer/Movie
+// @Tags Guest
 // @Accept json
 // @Produce json
 // @Param movie_id path string true "Movie ID"
@@ -87,9 +87,10 @@ func GetMovieById(c *gin.Context) {
 // CreateMovie godoc
 // @Summary Create Movie
 // @Description Create a new movie
-// @Tags Admin/Movie
+// @Tags Admin
 // @Accept json
 // @Produce json
+// @Param body body models.Movie true "Movie details"
 // @Success 201 {object} models.MovieResponse
 // @Router /movies [post]
 func CreateMovie(c *gin.Context) {
@@ -112,10 +113,11 @@ func CreateMovie(c *gin.Context) {
 // UpdateMovie godoc
 // @Summary Update Movie
 // @Description Update an existing movie
-// @Tags Admin/Movie
+// @Tags Admin
 // @Accept json
 // @Produce json
 // @Param movieId path string true "Movie ID"
+// @Param body body models.Movie true "Movie details"
 // @Success 200 {object} models.MovieResponse
 // @Router /movies/{movieId} [put]
 func UpdateMovie(c *gin.Context) {
@@ -139,7 +141,7 @@ func UpdateMovie(c *gin.Context) {
 // DeleteMovie godoc
 // @Summary Delete a movie
 // @Description Delete a movie by ID
-// @Tags Admin/Movie
+// @Tags Admin
 // @Param movieId path string true "Movie ID"
 // @Success 204 {object} models.Response
 // @Router /movies/{movieId} [delete]

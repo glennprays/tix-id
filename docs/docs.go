@@ -26,13 +26,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Branch"
+                    "Admin"
                 ],
                 "summary": "Create a new branch",
                 "parameters": [
                     {
                         "description": "Branch details",
-                        "name": "branch",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -60,7 +60,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Branch"
+                    "Admin"
                 ],
                 "summary": "Get branches",
                 "responses": {
@@ -83,7 +83,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Branch"
+                    "Admin"
                 ],
                 "summary": "Get branche",
                 "parameters": [
@@ -113,7 +113,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Branch"
+                    "Admin"
                 ],
                 "summary": "Update an existing branch",
                 "parameters": [
@@ -123,6 +123,15 @@ const docTemplate = `{
                         "name": "branchId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Branch details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Branch"
+                        }
                     }
                 ],
                 "responses": {
@@ -137,7 +146,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Delete Branch by ID",
                 "tags": [
-                    "Admin/Branch"
+                    "Admin"
                 ],
                 "summary": "Delete Branch",
                 "parameters": [
@@ -169,7 +178,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Branch/Theatre"
+                    "Admin"
                 ],
                 "summary": "Create Theatre",
                 "parameters": [
@@ -179,13 +188,22 @@ const docTemplate = `{
                         "name": "branchId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Theatre details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Theatre"
+                        }
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.TheatreResponse"
+                            "$ref": "#/definitions/models.BranchResponse"
                         }
                     }
                 }
@@ -201,7 +219,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Branch/Theatre"
+                    "Admin"
                 ],
                 "summary": "Update Theatre",
                 "parameters": [
@@ -218,13 +236,22 @@ const docTemplate = `{
                         "name": "theatreId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Theatre details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Theatre"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.TheatreResponse"
+                            "$ref": "#/definitions/models.BranchResponse"
                         }
                     }
                 }
@@ -232,7 +259,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Delete a Theatre in a Branch by ID",
                 "tags": [
-                    "Admin/Branch/Theatre"
+                    "Admin"
                 ],
                 "summary": "Delete Theatre",
                 "parameters": [
@@ -271,9 +298,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Auth"
+                    "Customer"
                 ],
                 "summary": "Login Customer",
+                "parameters": [
+                    {
+                        "description": "Login details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -297,6 +335,17 @@ const docTemplate = `{
                     "Customer"
                 ],
                 "summary": "Create New Customer",
+                "parameters": [
+                    {
+                        "description": "Customer details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Customer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -317,7 +366,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Account"
+                    "Customer"
                 ],
                 "summary": "Get Customer",
                 "parameters": [
@@ -347,7 +396,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Account"
+                    "Customer"
                 ],
                 "summary": "Update Customer",
                 "parameters": [
@@ -357,6 +406,15 @@ const docTemplate = `{
                         "name": "customerId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Customer details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Customer"
+                        }
                     }
                 ],
                 "responses": {
@@ -369,7 +427,85 @@ const docTemplate = `{
                 }
             }
         },
-        "/customer/{customerId}/ticket/payments": {
+        "/customer/{customerId}/ticket/{ticketId}": {
+            "get": {
+                "description": "Get payment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Get Payment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "ticketId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TicketResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customer/{customerId}/ticket/{ticketId}/payment": {
+            "post": {
+                "description": "Confirm payment with payment_id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Confirm Payment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "payment id",
+                        "name": "ticketId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TicketResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customer/{customerId}/tickets": {
             "get": {
                 "description": "Get all payments",
                 "consumes": [
@@ -379,7 +515,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Payment"
+                    "Customer"
                 ],
                 "summary": "Get Payments",
                 "parameters": [
@@ -395,78 +531,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PaymentsResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/customer/{customerId}/ticket/payments/{paymentId}": {
-            "get": {
-                "description": "Get payment",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Customer/Payment"
-                ],
-                "summary": "Get Payment",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Customer ID",
-                        "name": "customerId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Customer ID",
-                        "name": "paymentId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.PaymentResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/customer/{customerId}/ticket/payments/{payment_id}": {
-            "post": {
-                "description": "Confirm payment with payment_id.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Customer/Payment"
-                ],
-                "summary": "Confirm Payment",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "payment id",
-                        "name": "payment_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.PaymentResponse"
+                            "$ref": "#/definitions/models.TicketsResponse"
                         }
                     }
                 }
@@ -482,7 +547,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Movie"
+                    "Guest"
                 ],
                 "summary": "Get Movies",
                 "parameters": [
@@ -523,9 +588,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Movie"
+                    "Admin"
                 ],
                 "summary": "Create Movie",
+                "parameters": [
+                    {
+                        "description": "Movie details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Movie"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -546,7 +622,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Movie"
+                    "Guest"
                 ],
                 "summary": "Search movies by title and genre",
                 "parameters": [
@@ -583,7 +659,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Movie"
+                    "Admin"
                 ],
                 "summary": "Update Movie",
                 "parameters": [
@@ -593,6 +669,15 @@ const docTemplate = `{
                         "name": "movieId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Movie details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Movie"
+                        }
                     }
                 ],
                 "responses": {
@@ -607,7 +692,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Delete a movie by ID",
                 "tags": [
-                    "Admin/Movie"
+                    "Admin"
                 ],
                 "summary": "Delete a movie",
                 "parameters": [
@@ -630,40 +715,10 @@ const docTemplate = `{
             }
         },
         "/movies/{movieId}/schedule/{scheduleId}": {
-            "get": {
-                "description": "Get all schedules for a movie by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Customer/Schedule"
-                ],
-                "summary": "Get all schedules for a movie by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Movie ID",
-                        "name": "movie_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.ScheduleResponse"
-                        }
-                    }
-                }
-            },
             "put": {
                 "description": "Update a schedule for a movie",
                 "tags": [
-                    "Admin/Schedule"
+                    "Admin"
                 ],
                 "summary": "Update a movie schedule",
                 "parameters": [
@@ -680,42 +735,20 @@ const docTemplate = `{
                         "name": "scheduleId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Schedule details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Schedule"
+                        }
                     }
                 ],
                 "responses": {
                     "204": {
                         "description": "No Content",
-                        "schema": {
-                            "$ref": "#/definitions/models.ScheduleResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a schedule for a movie",
-                "tags": [
-                    "Admin/Schedule"
-                ],
-                "summary": "Create a movie schedule",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Movie ID",
-                        "name": "movieId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Schedule ID",
-                        "name": "scheduleId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.ScheduleResponse"
                         }
@@ -728,21 +761,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin/Schedule"
+                    "Admin"
                 ],
                 "summary": "Delete movie schedule",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Movie ID",
-                        "name": "movie_id",
+                        "name": "movieId",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Schedule ID",
-                        "name": "schedule_id",
+                        "name": "scheduleId",
                         "in": "path",
                         "required": true
                     }
@@ -767,7 +800,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Schedule"
+                    "Customer"
                 ],
                 "summary": "Get Schedule",
                 "parameters": [
@@ -789,6 +822,85 @@ const docTemplate = `{
                 }
             }
         },
+        "/movies/{movieId}/schedules/{scheduleId}": {
+            "get": {
+                "description": "Get all schedules for a movie by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Get all schedules for a movie by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "movieId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScheduleResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a schedule for a movie",
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Create a movie schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "movieId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Schedule details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Schedule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScheduleResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/movies/{movie_id}": {
             "get": {
                 "description": "Get a movie by ID",
@@ -799,7 +911,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer/Movie"
+                    "Guest"
                 ],
                 "summary": "Get a movie by ID",
                 "parameters": [
@@ -877,11 +989,11 @@ const docTemplate = `{
         "models.Customer": {
             "type": "object",
             "properties": {
-                "ID": {
-                    "type": "integer"
-                },
                 "email": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -908,6 +1020,17 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         },
@@ -968,28 +1091,14 @@ const docTemplate = `{
         "models.Payment": {
             "type": "object",
             "properties": {
-                "Amount": {
+                "amount": {
                     "type": "integer"
                 },
-                "ID": {
+                "id": {
                     "type": "integer"
-                },
-                "Status": {
-                    "$ref": "#/definitions/models.PaymentStatus"
-                }
-            }
-        },
-        "models.PaymentResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/models.Payment"
-                },
-                "message": {
-                    "type": "string"
                 },
                 "status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/models.PaymentStatus"
                 }
             }
         },
@@ -1005,23 +1114,6 @@ const docTemplate = `{
                 "Completed",
                 "Expired"
             ]
-        },
-        "models.PaymentsResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Payment"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                }
-            }
         },
         "models.Response": {
             "type": "object",
@@ -1119,11 +1211,45 @@ const docTemplate = `{
                 }
             }
         },
-        "models.TheatreResponse": {
+        "models.Ticket": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "payment": {
+                    "$ref": "#/definitions/models.Payment"
+                },
+                "schedule": {
+                    "$ref": "#/definitions/models.Schedule"
+                },
+                "seat": {
+                    "$ref": "#/definitions/models.Seat"
+                }
+            }
+        },
+        "models.TicketResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/models.Theatre"
+                    "$ref": "#/definitions/models.Ticket"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TicketsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Ticket"
+                    }
                 },
                 "message": {
                     "type": "string"

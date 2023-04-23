@@ -10,22 +10,22 @@ import (
 // GetPayments godoc
 // @Summary Get Payments
 // @Description Get all payments
-// @Tags Customer/Payment
+// @Tags Customer
 // @Accept json
 // @Produce json
 // @Param customerId path int true "Customer ID"
-// @Success 200 {object} models.PaymentsResponse
-// @Router /customer/{customerId}/ticket/payments [get]
+// @Success 200 {object} models.TicketsResponse
+// @Router /customer/{customerId}/tickets [get]
 func GetPayments(c *gin.Context) {
 	// customerId := c.Param("customerId")
 
-	var payments []models.Payment
-	responseData := models.PaymentsResponse{
+	var tickets []models.Ticket
+	responseData := models.TicketsResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Payments retrieved successfully",
 		},
-		Payments: payments,
+		Tickets: tickets,
 	}
 
 	c.JSON(http.StatusOK, responseData)
@@ -34,24 +34,24 @@ func GetPayments(c *gin.Context) {
 // GetPayment godoc
 // @Summary Get Payment
 // @Description Get payment
-// @Tags Customer/Payment
+// @Tags Customer
 // @Accept json
 // @Produce json
 // @Param customerId path int true "Customer ID"
-// @Param paymentId path int true "Customer ID"
-// @Success 200 {object} models.PaymentResponse
-// @Router /customer/{customerId}/ticket/payments/{paymentId} [get]
+// @Param ticketId path int true "Customer ID"
+// @Success 200 {object} models.TicketResponse
+// @Router /customer/{customerId}/ticket/{ticketId} [get]
 func GetPayment(c *gin.Context) {
 	// customerId := c.Param("customerId")
-	// paymentId := c.Param("paymentId")
+	// ticketId := c.Param("ticketId")
 
-	var payment models.Payment
-	responseData := models.PaymentResponse{
+	var ticket models.Ticket
+	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Payment retrieved successfully",
 		},
-		Payment: payment,
+		Ticket: ticket,
 	}
 
 	c.JSON(http.StatusOK, responseData)
@@ -60,24 +60,25 @@ func GetPayment(c *gin.Context) {
 // ConfirmPayment godoc
 // @Summary Confirm Payment
 // @Description Confirm payment with payment_id.
-// @Tags Customer/Payment
-// @Param payment_id path string true "payment id"
+// @Tags Customer
+// @Param customerId path int true "Customer ID"
+// @Param ticketId path string true "payment id"
 // @Accept json
 // @Produce json
-// @Success 200 {object} models.PaymentResponse
-// @Router /customer/{customerId}/ticket/payments/{payment_id} [post]
+// @Success 200 {object} models.TicketResponse
+// @Router /customer/{customerId}/ticket/{ticketId}/payment [post]
 func ConfirmPayment(c *gin.Context) {
 
 	// customerId := c.Param("customerId")
-	// paymentId := c.Param("paymentId")
+	// ticketId := c.Param("ticketId")
 
-	var payment models.Payment
-	responseData := models.PaymentResponse{
+	var ticket models.Ticket
+	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
-			Message: "Payment retrieved successfully",
+			Message: "Payment Confirm successfully",
 		},
-		Payment: payment,
+		Ticket: ticket,
 	}
 
 	c.JSON(http.StatusOK, responseData)
