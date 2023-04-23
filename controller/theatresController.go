@@ -10,11 +10,12 @@ import (
 // CreateTheatre godoc
 // @Summary Create Theatre
 // @Description Create a new Theatre in a Branch
-// @Tags Admin/Branch/Theatre
+// @Tags Admin
 // @Accept json
 // @Produce json
 // @Param branchId path int true "Branch ID"
-// @Success 201 {object} models.TheatreResponse
+// @Param body body models.Theatre true "Theatre details"
+// @Success 201 {object} models.BranchResponse
 // @Router /branches/{branchId}/theatres [post]
 func CreateTheatre(c *gin.Context) {
 	// branchId := c.Query("branchId")
@@ -38,11 +39,12 @@ func CreateTheatre(c *gin.Context) {
 // UpdateTheatre godoc
 // @Summary Update Theatre
 // @Description Update a Theatre in a Branch by ID
-// @Tags Admin/Branch/Theatre
+// @Tags Admin
 // @Accept json
 // @Produce json
 // @Param branchId path int true "Branch ID"
 // @Param theatreId path int true "Theatre ID"
+// @Param body body models.Theatre true "Theatre details"
 // @Success 200 {object} models.BranchResponse
 // @Router /branches/{branchId}/theatres/{theatreId} [put]
 func UpdateTheatre(c *gin.Context) {
@@ -67,7 +69,7 @@ func UpdateTheatre(c *gin.Context) {
 // DeleteTheatre godoc
 // @Summary Delete Theatre
 // @Description Delete a Theatre in a Branch by ID
-// @Tags Admin/Branch/Theatre
+// @Tags Admin
 // @Param branchId path int true "Branch ID"
 // @Param theatreId path int true "Theatre ID"
 // @Success 204 {object} models.Response

@@ -10,13 +10,13 @@ import (
 // GetSchedule godoc
 // @Summary Get Schedule
 // @Description Get a schedule by movie_id and schedule_id.
-// @Tags Customer/Schedule
+// @Tags Customer
 // @Param movieId path string true "movie id"
 // @Accept json
 // @Produce json
 // @Success 200 {object} models.SchedulesResponse
 // @Router /movies/{movieId}/schedules [get]
-func GetSchedule(c *gin.Context) {
+func GetSchedules(c *gin.Context) {
 	// movieId := c.Query("movieId")
 	var schedules []models.Schedule
 
@@ -33,13 +33,14 @@ func GetSchedule(c *gin.Context) {
 // GetSchedulesByMovieId godoc
 // @Summary Get all schedules for a movie by ID
 // @Description Get all schedules for a movie by ID
-// @Tags Customer/Schedule
+// @Tags Customer
 // @Accept json
 // @Produce json
-// @Param movie_id path string true "Movie ID"
+// @Param movieId path string true "Movie ID"
+// @Param scheduleId path string true "Schedule ID"
 // @Success 200 {object} models.ScheduleResponse
-// @Router /movies/{movieId}/schedule/{scheduleId} [get]
-func GetSchedulesByMovieId(c *gin.Context) {
+// @Router /movies/{movieId}/schedules/{scheduleId} [get]
+func GetSchedule(c *gin.Context) {
 	// movieId := c.Query("movieId")
 	// scheduleId := c.Query("scheduleId")
 	var schedule models.Schedule
@@ -57,15 +58,21 @@ func GetSchedulesByMovieId(c *gin.Context) {
 // CreateMovieSchedule godoc
 // @Summary Create a movie schedule
 // @Description Create a schedule for a movie
-// @Tags Admin/Schedule
+// @Tags Admin
 // @Param movieId path string true "Movie ID"
 // @Param scheduleId path string true "Schedule ID"
+// @Param body body models.Schedule true "Schedule details"
 // @Success 201 {object} models.ScheduleResponse
-// @Router /movies/{movieId}/schedule/{scheduleId} [post]
+// @Router /movies/{movieId}/schedules/{scheduleId} [post]
 func CreateMovieSchedule(c *gin.Context) {
 	// movieId := c.Query("movieId")
 	// scheduleId := c.Query("scheduleId")
 	var schedule models.Schedule
+	if err := c.ShouldBindJSON(&schedule); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	responseData := models.ScheduleResponse{
 		Response: models.Response{
 			Status:  200,
@@ -79,9 +86,10 @@ func CreateMovieSchedule(c *gin.Context) {
 // UpdateMovieSchedule godoc
 // @Summary Update a movie schedule
 // @Description Update a schedule for a movie
-// @Tags Admin/Schedule
+// @Tags Admin
 // @Param movieId path string true "Movie ID"
 // @Param scheduleId path string true "Schedule ID"
+// @Param body body models.Schedule true "Schedule details"
 // @Success 204 {object} models.ScheduleResponse
 // @Router /movies/{movieId}/schedule/{scheduleId} [put]
 func UpdateMovieSchedule(c *gin.Context) {
@@ -101,9 +109,9 @@ func UpdateMovieSchedule(c *gin.Context) {
 // DeleteSchedule godoc
 // @Summary Delete movie schedule
 // @Description Delete a specific movie schedule by id
-// @Tags Admin/Schedule
-// @Param movie_id path string true "Movie ID"
-// @Param schedule_id path string true "Schedule ID"
+// @Tags Admin
+// @Param movieId path string true "Movie ID"
+// @Param scheduleId path string true "Schedule ID"
 // @Produce json
 // @Success 204 {object} models.Response
 // @Router /movies/{movieId}/schedule/{scheduleId} [delete]

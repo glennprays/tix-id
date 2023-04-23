@@ -13,6 +13,7 @@ import (
 // @Tags Customer
 // @Accept json
 // @Produce json
+// @Param body body models.Customer true "Customer details"
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/registration [post]
 func AddCustomer(c *gin.Context) {
@@ -36,9 +37,10 @@ func AddCustomer(c *gin.Context) {
 // LoginCustomer godoc
 // @Summary Login Customer
 // @Description Login Customer Account
-// @Tags Customer/Auth
+// @Tags Customer
 // @Accept json
 // @Produce json
+// @Param body body models.LoginRequest true "Login details"
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/auth/login [post]
 func LoginCustomer(c *gin.Context) {
@@ -63,7 +65,7 @@ func LoginCustomer(c *gin.Context) {
 // GetCustomer godoc
 // @Summary Get Customer
 // @Description get Account
-// @Tags Customer/Account
+// @Tags Customer
 // @Accept json
 // @Produce json
 // @Param customerId path int true "Customer ID"
@@ -88,10 +90,11 @@ func GetCustomer(c *gin.Context) {
 // PutCustomer godoc
 // @Summary Update Customer
 // @Description Put Customer Account
-// @Tags Customer/Account
+// @Tags Customer
 // @Accept json
 // @Produce json
 // @Param customerId path int true "Customer ID"
+// @Param body body models.Customer true "Customer details"
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/{customerId}/profile [put]
 func UpdateCustomer(c *gin.Context) {

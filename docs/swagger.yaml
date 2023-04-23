@@ -34,10 +34,10 @@ definitions:
     type: object
   models.Customer:
     properties:
-      ID:
-        type: integer
       email:
         type: string
+      id:
+        type: integer
       name:
         type: string
       password:
@@ -55,6 +55,13 @@ definitions:
         type: string
       status:
         type: integer
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
     type: object
   models.Movie:
     properties:
@@ -93,21 +100,12 @@ definitions:
     type: object
   models.Payment:
     properties:
-      Amount:
+      amount:
         type: integer
-      ID:
+      id:
         type: integer
-      Status:
-        $ref: '#/definitions/models.PaymentStatus'
-    type: object
-  models.PaymentResponse:
-    properties:
-      data:
-        $ref: '#/definitions/models.Payment'
-      message:
-        type: string
       status:
-        type: integer
+        $ref: '#/definitions/models.PaymentStatus'
     type: object
   models.PaymentStatus:
     enum:
@@ -119,17 +117,6 @@ definitions:
     - Pending
     - Completed
     - Expired
-  models.PaymentsResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/models.Payment'
-        type: array
-      message:
-        type: string
-      status:
-        type: integer
-    type: object
   models.Response:
     properties:
       message:
@@ -192,10 +179,32 @@ definitions:
       name:
         type: string
     type: object
-  models.TheatreResponse:
+  models.Ticket:
+    properties:
+      id:
+        type: integer
+      payment:
+        $ref: '#/definitions/models.Payment'
+      schedule:
+        $ref: '#/definitions/models.Schedule'
+      seat:
+        $ref: '#/definitions/models.Seat'
+    type: object
+  models.TicketResponse:
     properties:
       data:
-        $ref: '#/definitions/models.Theatre'
+        $ref: '#/definitions/models.Ticket'
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  models.TicketsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Ticket'
+        type: array
       message:
         type: string
       status:
@@ -212,7 +221,7 @@ paths:
       parameters:
       - description: Branch details
         in: body
-        name: branch
+        name: body
         required: true
         schema:
           $ref: '#/definitions/models.Branch'
@@ -225,7 +234,7 @@ paths:
             $ref: '#/definitions/models.BranchResponse'
       summary: Create a new branch
       tags:
-      - Admin/Branch
+      - Admin
   /branches:
     get:
       consumes:
@@ -240,7 +249,7 @@ paths:
             $ref: '#/definitions/models.BranchesResponse'
       summary: Get branches
       tags:
-      - Admin/Branch
+      - Admin
   /branches/{branchId}:
     delete:
       description: Delete Branch by ID
@@ -257,7 +266,7 @@ paths:
             $ref: '#/definitions/models.Response'
       summary: Delete Branch
       tags:
-      - Admin/Branch
+      - Admin
     get:
       consumes:
       - application/json
@@ -277,7 +286,7 @@ paths:
             $ref: '#/definitions/models.BranchesResponse'
       summary: Get branche
       tags:
-      - Admin/Branch
+      - Admin
     put:
       consumes:
       - application/json
@@ -288,6 +297,12 @@ paths:
         name: branchId
         required: true
         type: string
+      - description: Branch details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Branch'
       produces:
       - application/json
       responses:
@@ -297,7 +312,7 @@ paths:
             $ref: '#/definitions/models.BranchResponse'
       summary: Update an existing branch
       tags:
-      - Admin/Branch
+      - Admin
   /branches/{branchId}/theatres:
     post:
       consumes:
@@ -309,16 +324,22 @@ paths:
         name: branchId
         required: true
         type: integer
+      - description: Theatre details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Theatre'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.TheatreResponse'
+            $ref: '#/definitions/models.BranchResponse'
       summary: Create Theatre
       tags:
-      - Admin/Branch/Theatre
+      - Admin
   /branches/{branchId}/theatres/{theatreId}:
     delete:
       description: Delete a Theatre in a Branch by ID
@@ -340,7 +361,7 @@ paths:
             $ref: '#/definitions/models.Response'
       summary: Delete Theatre
       tags:
-      - Admin/Branch/Theatre
+      - Admin
     put:
       consumes:
       - application/json
@@ -356,16 +377,22 @@ paths:
         name: theatreId
         required: true
         type: integer
+      - description: Theatre details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Theatre'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.TheatreResponse'
+            $ref: '#/definitions/models.BranchResponse'
       summary: Update Theatre
       tags:
-      - Admin/Branch/Theatre
+      - Admin
   /customer/{customerId}/profile:
     get:
       consumes:
@@ -386,7 +413,7 @@ paths:
             $ref: '#/definitions/models.CustomerResponse'
       summary: Get Customer
       tags:
-      - Customer/Account
+      - Customer
     put:
       consumes:
       - application/json
@@ -397,6 +424,12 @@ paths:
         name: customerId
         required: true
         type: integer
+      - description: Customer details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Customer'
       produces:
       - application/json
       responses:
@@ -406,8 +439,60 @@ paths:
             $ref: '#/definitions/models.CustomerResponse'
       summary: Update Customer
       tags:
-      - Customer/Account
-  /customer/{customerId}/ticket/payments:
+      - Customer
+  /customer/{customerId}/ticket/{ticketId}:
+    get:
+      consumes:
+      - application/json
+      description: Get payment
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: integer
+      - description: Customer ID
+        in: path
+        name: ticketId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TicketResponse'
+      summary: Get Payment
+      tags:
+      - Customer
+  /customer/{customerId}/ticket/{ticketId}/payment:
+    post:
+      consumes:
+      - application/json
+      description: Confirm payment with payment_id.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: integer
+      - description: payment id
+        in: path
+        name: ticketId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TicketResponse'
+      summary: Confirm Payment
+      tags:
+      - Customer
+  /customer/{customerId}/tickets:
     get:
       consumes:
       - application/json
@@ -424,62 +509,22 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.PaymentsResponse'
+            $ref: '#/definitions/models.TicketsResponse'
       summary: Get Payments
       tags:
-      - Customer/Payment
-  /customer/{customerId}/ticket/payments/{payment_id}:
-    post:
-      consumes:
-      - application/json
-      description: Confirm payment with payment_id.
-      parameters:
-      - description: payment id
-        in: path
-        name: payment_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.PaymentResponse'
-      summary: Confirm Payment
-      tags:
-      - Customer/Payment
-  /customer/{customerId}/ticket/payments/{paymentId}:
-    get:
-      consumes:
-      - application/json
-      description: Get payment
-      parameters:
-      - description: Customer ID
-        in: path
-        name: customerId
-        required: true
-        type: integer
-      - description: Customer ID
-        in: path
-        name: paymentId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.PaymentResponse'
-      summary: Get Payment
-      tags:
-      - Customer/Payment
+      - Customer
   /customer/auth/login:
     post:
       consumes:
       - application/json
       description: Login Customer Account
+      parameters:
+      - description: Login details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
       produces:
       - application/json
       responses:
@@ -489,12 +534,19 @@ paths:
             $ref: '#/definitions/models.CustomerResponse'
       summary: Login Customer
       tags:
-      - Customer/Auth
+      - Customer
   /customer/registration:
     post:
       consumes:
       - application/json
       description: Create New Customer Account
+      parameters:
+      - description: Customer details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Customer'
       produces:
       - application/json
       responses:
@@ -532,11 +584,18 @@ paths:
             $ref: '#/definitions/models.MoviesResponse'
       summary: Get Movies
       tags:
-      - Customer/Movie
+      - Guest
     post:
       consumes:
       - application/json
       description: Create a new movie
+      parameters:
+      - description: Movie details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movie'
       produces:
       - application/json
       responses:
@@ -546,7 +605,7 @@ paths:
             $ref: '#/definitions/models.MovieResponse'
       summary: Create Movie
       tags:
-      - Admin/Movie
+      - Admin
   /movies/{movie_id}:
     get:
       consumes:
@@ -567,7 +626,7 @@ paths:
             $ref: '#/definitions/models.Movie'
       summary: Get a movie by ID
       tags:
-      - Customer/Movie
+      - Guest
   /movies/{movieId}:
     delete:
       description: Delete a movie by ID
@@ -584,7 +643,7 @@ paths:
             $ref: '#/definitions/models.Response'
       summary: Delete a movie
       tags:
-      - Admin/Movie
+      - Admin
     put:
       consumes:
       - application/json
@@ -595,6 +654,12 @@ paths:
         name: movieId
         required: true
         type: string
+      - description: Movie details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movie'
       produces:
       - application/json
       responses:
@@ -604,53 +669,10 @@ paths:
             $ref: '#/definitions/models.MovieResponse'
       summary: Update Movie
       tags:
-      - Admin/Movie
+      - Admin
   /movies/{movieId}/schedule/{scheduleId}:
     delete:
       description: Delete a specific movie schedule by id
-      parameters:
-      - description: Movie ID
-        in: path
-        name: movie_id
-        required: true
-        type: string
-      - description: Schedule ID
-        in: path
-        name: schedule_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-          schema:
-            $ref: '#/definitions/models.Response'
-      summary: Delete movie schedule
-      tags:
-      - Admin/Schedule
-    get:
-      consumes:
-      - application/json
-      description: Get all schedules for a movie by ID
-      parameters:
-      - description: Movie ID
-        in: path
-        name: movie_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ScheduleResponse'
-      summary: Get all schedules for a movie by ID
-      tags:
-      - Customer/Schedule
-    post:
-      description: Create a schedule for a movie
       parameters:
       - description: Movie ID
         in: path
@@ -662,14 +684,16 @@ paths:
         name: scheduleId
         required: true
         type: string
+      produces:
+      - application/json
       responses:
-        "201":
-          description: Created
+        "204":
+          description: No Content
           schema:
-            $ref: '#/definitions/models.ScheduleResponse'
-      summary: Create a movie schedule
+            $ref: '#/definitions/models.Response'
+      summary: Delete movie schedule
       tags:
-      - Admin/Schedule
+      - Admin
     put:
       description: Update a schedule for a movie
       parameters:
@@ -683,6 +707,12 @@ paths:
         name: scheduleId
         required: true
         type: string
+      - description: Schedule details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Schedule'
       responses:
         "204":
           description: No Content
@@ -690,7 +720,7 @@ paths:
             $ref: '#/definitions/models.ScheduleResponse'
       summary: Update a movie schedule
       tags:
-      - Admin/Schedule
+      - Admin
   /movies/{movieId}/schedules:
     get:
       consumes:
@@ -711,7 +741,60 @@ paths:
             $ref: '#/definitions/models.SchedulesResponse'
       summary: Get Schedule
       tags:
-      - Customer/Schedule
+      - Customer
+  /movies/{movieId}/schedules/{scheduleId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all schedules for a movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movieId
+        required: true
+        type: string
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScheduleResponse'
+      summary: Get all schedules for a movie by ID
+      tags:
+      - Customer
+    post:
+      description: Create a schedule for a movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movieId
+        required: true
+        type: string
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: string
+      - description: Schedule details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Schedule'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ScheduleResponse'
+      summary: Create a movie schedule
+      tags:
+      - Admin
   /movies/search:
     get:
       consumes:
@@ -735,5 +818,5 @@ paths:
             $ref: '#/definitions/models.MoviesResponse'
       summary: Search movies by title and genre
       tags:
-      - Customer/Movie
+      - Guest
 swagger: "2.0"

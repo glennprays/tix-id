@@ -10,10 +10,10 @@ import (
 // CreateBranch godoc
 // @Summary Create a new branch
 // @Description Create a new branch with the given details
-// @Tags Admin/Branch
+// @Tags Admin
 // @Accept json
 // @Produce json
-// @Param branch body models.Branch true "Branch details"
+// @Param body body models.Branch true "Branch details"
 // @Success 201 {object} models.BranchResponse
 // @Router /branch [post]
 func CreateBranch(c *gin.Context) {
@@ -36,7 +36,7 @@ func CreateBranch(c *gin.Context) {
 // GetBranches godoc
 // @Summary Get branches
 // @Description Get a branches by movie_id and branches_id.
-// @Tags Admin/Branch
+// @Tags Admin
 // @Accept json
 // @Produce json
 // @Success 200 {object} models.BranchesResponse
@@ -57,7 +57,7 @@ func GetBranches(c *gin.Context) {
 // GetBranch godoc
 // @Summary Get branche
 // @Description Get a branche by movie_id and branche_id.
-// @Tags Admin/Branch
+// @Tags Admin
 // @Param branchId path string true "branch id"
 // @Accept json
 // @Produce json
@@ -79,7 +79,7 @@ func GetBranch(c *gin.Context) {
 // DeleteBranch godoc
 // @Summary Delete Branch
 // @Description Delete Branch by ID
-// @Tags Admin/Branch
+// @Tags Admin
 // @Param branchId path int true "Branch ID"
 // @Success 204 {object} models.Response
 // @Router /branches/{branchId} [delete]
@@ -95,10 +95,11 @@ func DeleteBranch(c *gin.Context) {
 // UpdateBranch godoc
 // @Summary Update an existing branch
 // @Description Update an existing branch with the given details
-// @Tags Admin/Branch
+// @Tags Admin
 // @Accept json
 // @Produce json
 // @Param branchId path string true "Branch ID"
+// @Param body body models.Branch true "Branch details"
 // @Success 200 {object} models.BranchResponse
 // @Router /branches/{branchId} [put]
 func UpdateBranch(c *gin.Context) {
