@@ -24,12 +24,13 @@ func CreateTheatre(c *gin.Context) {
 		return
 	}
 
-	responseData := models.TheatreResponse{
+	var branch models.Branch
+	responseData := models.BranchResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Theatre inserted successfully",
 		},
-		Theatre: theatre,
+		Branch: branch,
 	}
 	c.JSON(http.StatusOK, responseData)
 }
@@ -42,7 +43,7 @@ func CreateTheatre(c *gin.Context) {
 // @Produce json
 // @Param branchId path int true "Branch ID"
 // @Param theatreId path int true "Theatre ID"
-// @Success 200 {object} models.TheatreResponse
+// @Success 200 {object} models.BranchResponse
 // @Router /branches/{branchId}/theatres/{theatreId} [put]
 func UpdateTheatre(c *gin.Context) {
 	// branchId := c.Query("branchId")
@@ -52,12 +53,13 @@ func UpdateTheatre(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	responseData := models.TheatreResponse{
+	var branch models.Branch
+	responseData := models.BranchResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Theatre updated successfully",
 		},
-		Theatre: theatre,
+		Branch: branch,
 	}
 	c.JSON(http.StatusOK, responseData)
 }
@@ -73,13 +75,9 @@ func UpdateTheatre(c *gin.Context) {
 func DeleteTheatre(c *gin.Context) {
 	// branchId := c.Query("branchId")
 	// theatreId := c.Query("theatreId")
-	var theatre models.Theatre
-	responseData := models.TheatreResponse{
-		Response: models.Response{
-			Status:  200,
-			Message: "Theatre updated successfully",
-		},
-		Theatre: theatre,
+	responseData := models.Response{
+		Status:  200,
+		Message: "Theatre deleted successfully",
 	}
 	c.JSON(http.StatusOK, responseData)
 }

@@ -54,7 +54,7 @@ func GetBranches(c *gin.Context) {
 	c.JSON(http.StatusOK, responseData)
 }
 
-// GetBranche godoc
+// GetBranch godoc
 // @Summary Get branche
 // @Description Get a branche by movie_id and branche_id.
 // @Tags Admin/Branch
@@ -63,7 +63,7 @@ func GetBranches(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} models.BranchesResponse
 // @Router /branches/{branchId} [get]
-func GetBranche(c *gin.Context) {
+func GetBranch(c *gin.Context) {
 	// branchId := c.Query("branchId")
 	var branch models.Branch
 	responseData := models.BranchResponse{

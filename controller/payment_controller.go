@@ -14,18 +14,18 @@ import (
 // @Accept json
 // @Produce json
 // @Param customerId path int true "Customer ID"
-// @Success 200 {object} models.PaymentsResponse
+// @Success 200 {object} models.TicketsResponse
 // @Router /customer/{customerId}/ticket/payments [get]
 func GetPayments(c *gin.Context) {
 	// customerId := c.Param("customerId")
 
-	var payments []models.Payment
-	responseData := models.PaymentsResponse{
+	var tickets []models.Ticket
+	responseData := models.TicketsResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Payments retrieved successfully",
 		},
-		Payments: payments,
+		Tickets: tickets,
 	}
 
 	c.JSON(http.StatusOK, responseData)
@@ -39,19 +39,19 @@ func GetPayments(c *gin.Context) {
 // @Produce json
 // @Param customerId path int true "Customer ID"
 // @Param paymentId path int true "Customer ID"
-// @Success 200 {object} models.PaymentResponse
+// @Success 200 {object} models.TicketResponse
 // @Router /customer/{customerId}/ticket/payments/{paymentId} [get]
 func GetPayment(c *gin.Context) {
 	// customerId := c.Param("customerId")
 	// paymentId := c.Param("paymentId")
 
-	var payment models.Payment
-	responseData := models.PaymentResponse{
+	var ticket models.Ticket
+	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Payment retrieved successfully",
 		},
-		Payment: payment,
+		Ticket: ticket,
 	}
 
 	c.JSON(http.StatusOK, responseData)
@@ -64,20 +64,20 @@ func GetPayment(c *gin.Context) {
 // @Param payment_id path string true "payment id"
 // @Accept json
 // @Produce json
-// @Success 200 {object} models.PaymentResponse
+// @Success 200 {object} models.TicketResponse
 // @Router /customer/{customerId}/ticket/payments/{payment_id} [post]
 func ConfirmPayment(c *gin.Context) {
 
 	// customerId := c.Param("customerId")
 	// paymentId := c.Param("paymentId")
 
-	var payment models.Payment
-	responseData := models.PaymentResponse{
+	var ticket models.Ticket
+	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
-			Message: "Payment retrieved successfully",
+			Message: "Payment Confirm successfully",
 		},
-		Payment: payment,
+		Ticket: ticket,
 	}
 
 	c.JSON(http.StatusOK, responseData)
