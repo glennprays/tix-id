@@ -213,7 +213,21 @@ definitions:
 info:
   contact: {}
 paths:
-  /branch:
+  /branches:
+    get:
+      consumes:
+      - application/json
+      description: Get a branches by movie_id and branches_id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BranchesResponse'
+      summary: Get branches
+      tags:
+      - Admin
     post:
       consumes:
       - application/json
@@ -233,21 +247,6 @@ paths:
           schema:
             $ref: '#/definitions/models.BranchResponse'
       summary: Create a new branch
-      tags:
-      - Admin
-  /branches:
-    get:
-      consumes:
-      - application/json
-      description: Get a branches by movie_id and branches_id.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.BranchesResponse'
-      summary: Get branches
       tags:
       - Admin
   /branches/{branchId}:

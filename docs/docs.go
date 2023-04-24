@@ -16,7 +16,28 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/branch": {
+        "/branches": {
+            "get": {
+                "description": "Get a branches by movie_id and branches_id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get branches",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.BranchesResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new branch with the given details",
                 "consumes": [
@@ -45,29 +66,6 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.BranchResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/branches": {
-            "get": {
-                "description": "Get a branches by movie_id and branches_id.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Get branches",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.BranchesResponse"
                         }
                     }
                 }
