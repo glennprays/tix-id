@@ -17,7 +17,7 @@ func SetupRouter() *gin.Engine {
 			"message": "Welcome to TIX-ID",
 		})
 	})
-
+	// secretKey := os.Getenv("JWT_KEY")
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
