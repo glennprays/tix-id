@@ -15,7 +15,7 @@ import (
 // @Produce json
 // @Param body body models.Branch true "Branch details"
 // @Success 201 {object} models.BranchResponse
-// @Router /branch [post]
+// @Router /branches [post]
 func CreateBranch(c *gin.Context) {
 	var branch models.Branch
 	if err := c.ShouldBindJSON(&branch); err != nil {

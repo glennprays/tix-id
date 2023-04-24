@@ -1,4 +1,30 @@
 definitions:
+  models.Admin:
+    properties:
+      NIK:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
+  models.AdminResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.Admin'
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
   models.Branch:
     properties:
       address:
@@ -213,7 +239,43 @@ definitions:
 info:
   contact: {}
 paths:
-  /branch:
+  /admin/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login Admin Account
+      parameters:
+      - description: Login details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminResponse'
+      summary: Login Admin
+      tags:
+      - Admin
+  /branches:
+    get:
+      consumes:
+      - application/json
+      description: Get a branches by movie_id and branches_id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BranchesResponse'
+      summary: Get branches
+      tags:
+      - Admin
     post:
       consumes:
       - application/json
@@ -233,21 +295,6 @@ paths:
           schema:
             $ref: '#/definitions/models.BranchResponse'
       summary: Create a new branch
-      tags:
-      - Admin
-  /branches:
-    get:
-      consumes:
-      - application/json
-      description: Get a branches by movie_id and branches_id.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.BranchesResponse'
-      summary: Get branches
       tags:
       - Admin
   /branches/{branchId}:
