@@ -9,3 +9,8 @@ type Admin struct {
 	Phone    string  `json:"phone"`
 	NIK      string  `json:"NIK"`
 }
+
+type AdminResponse struct {
+	Response
+	Admin Admin `json:"data"`
+}
