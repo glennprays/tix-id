@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"log"
 	"net/http"
+	"tix-id/config"
+	"tix-id/middleware"
 	"tix-id/models"
 
 	"github.com/gin-gonic/gin"
@@ -17,20 +20,36 @@ import (
 // @Success 200 {object} models.AdminResponse
 // @Router /admin/auth/login [post]
 func LoginAdmin(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var login models.LoginRequest
 	if err := c.ShouldBindJSON(&login); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	row := db.QueryRow("select id, username, name, email, phone, nik from admin where email = ? and password = ?",
+		login.Email,
+		login.Password)
+
 	var admin models.Admin
-	responseData := models.AdminResponse{
-		Response: models.Response{
-			Status:  200,
-			Message: "Login successful",
-		},
-		Admin: admin,
+	if err := row.Scan(&admin.ID, &admin.Username, &admin.Name, &admin.Email, &admin.Phone, &admin.NIK); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	} else {
+		middleware.CreateToken(c, uint(admin.ID), "admin", 3600)
+
+		responseData := models.AdminResponse{
+			Response: models.Response{
+				Status:  200,
+				Message: "Login successful",
+			},
+			Admin: admin,
+		}
+
+		c.JSON(http.StatusCreated, responseData)
 	}
 
-	c.JSON(http.StatusCreated, responseData)
 }
