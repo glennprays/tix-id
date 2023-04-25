@@ -207,11 +207,56 @@ func CreateTicket(c *gin.Context) {
 // @Param ticketId path int true "Customer ID"
 // @Success 200 {object} models.TicketResponse
 // @Router /customer/{customerId}/tickets/{ticketId} [get]
-func GetPayment(c *gin.Context) {
-	// customerId := c.Param("customerId")
-	// ticketId := c.Param("ticketId")
+func GetTicket(c *gin.Context) {
+	ticketId := c.Param("ticketId")
 
+	db := config.ConnectDB()
+	defer db.Close()
+	// TODO:get by customer id and verify with id in cookies
+	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
+	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	// if customerIdParam != int(customerId) {
+	// 	response := models.Response{
+	// 		Status:  200,
+	// 		Message: "The user id didn't matched",
+	// 	}
+	// 	c.JSON(http.StatusOK, response)
+	// 	return
+	// }
+
+	// dummy data
+	customerId := customerIdParam
+
+	// get data
+	query := "SELECT tc.id, se.id, se.row, se.seat_number, p.id, p.amount, p.payment_status, s.id, s.price, s.show_time, m.id, m.title, m.description, m.duration, m.rating, m.release_date, b.id, b.name, b.address, t.id, t.name from ticket tc join seat se on se.id = tc.seat_id join payment p on p.id = tc.payment_id join schedule s on s.id = tc.schedule_id join movie m on m.id = s.movie_id join theatre t on t.id = s.theatre_id join branch b on b.id = t.branch_id where tc.id = ? and tc.customer_id = ?"
 	var ticket models.Ticket
+	var seat models.Seat
+	var payment models.Payment
+	var schedule models.ScheduleTicket
+	var movie models.Movie
+	var branch models.BranchTheatre
+	var theatre models.Theatre
+	err = db.QueryRow(query, ticketId, customerId).Scan(&ticket.ID, &seat.ID, &seat.Row, &seat.Number, &payment.ID, &payment.Amount, &payment.Status, &schedule.ID, &schedule.Price, &schedule.Showtime, &movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate, &branch.ID, &branch.Name, &branch.Address, &theatre.ID, &theatre.Name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the ticket is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	branch.Theatre = theatre
+	schedule.Branch = &branch
+	schedule.Movie = &movie
+	ticket.Schedule = schedule
+	ticket.Payment = payment
+	ticket.Seat = seat
+
 	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
