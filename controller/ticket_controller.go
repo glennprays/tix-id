@@ -20,14 +20,79 @@ import (
 // @Param customerId path int true "Customer ID"
 // @Success 200 {object} models.TicketsResponse
 // @Router /customer/{customerId}/tickets [get]
-func GetPayments(c *gin.Context) {
-	// customerId := c.Param("customerId")
+func GetTickets(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+	// TODO:get by customer id and verify with id in cookies
+	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
+	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	// if customerIdParam != int(customerId) {
+	// 	response := models.Response{
+	// 		Status:  200,
+	// 		Message: "The user id didn't matched",
+	// 	}
+	// 	c.JSON(http.StatusOK, response)
+	// 	return
+	// }
 
+	// dummy data
+	customerId := customerIdParam
+
+	query := "select count(*) from ticket where customer_id = ?"
+	var count int
+	err = db.QueryRow(query, customerId).Scan(&count)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if count < 1 {
+		response := models.Response{
+			Status:  404,
+			Message: "You have no tickets!",
+		}
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	// get data
+	query = "SELECT tc.id, se.id, se.row, se.seat_number, p.id, p.amount, p.payment_status, s.id, s.price, s.show_time, m.id, m.title, m.description, m.duration, m.rating, m.release_date, b.id, b.name, b.address, t.id, t.name from ticket tc join seat se on se.id = tc.seat_id join payment p on p.id = tc.payment_id join schedule s on s.id = tc.schedule_id join movie m on m.id = s.movie_id join theatre t on t.id = s.theatre_id join branch b on b.id = t.branch_id where tc.customer_id = ?"
+	rows, err := db.Query(query, customerId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var ticket models.Ticket
 	var tickets []models.Ticket
+	var seat models.Seat
+	var payment models.Payment
+	var schedule models.ScheduleTicket
+	var movie models.Movie
+	var branch models.BranchTheatre
+	var theatre models.Theatre
+	for rows.Next() {
+		log.Println("==============")
+		if err := rows.Scan(&ticket.ID, &seat.ID, &seat.Row, &seat.Number, &payment.ID, &payment.Amount, &payment.Status, &schedule.ID, &schedule.Price, &schedule.Showtime, &movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate, &branch.ID, &branch.Name, &branch.Address, &theatre.ID, &theatre.Name); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		} else {
+			branch.Theatre = theatre
+			schedule.Branch = &branch
+			schedule.Movie = &movie
+			ticket.Schedule = schedule
+			ticket.Payment = payment
+			ticket.Seat = seat
+			tickets = append(tickets, ticket)
+		}
+	}
+
 	responseData := models.TicketsResponse{
 		Response: models.Response{
 			Status:  200,
-			Message: "Payments retrieved successfully",
+			Message: "Tickets retrieved successfully",
 		},
 		Tickets: tickets,
 	}
@@ -260,7 +325,7 @@ func GetTicket(c *gin.Context) {
 	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
-			Message: "Payment retrieved successfully",
+			Message: "Ticket retrieved successfully",
 		},
 		Ticket: ticket,
 	}
