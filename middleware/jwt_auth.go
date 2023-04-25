@@ -26,13 +26,13 @@ func generateSecretKey() ([]byte, error) {
 	return key, nil
 }
 
-func CreateToken(userId uint, role string, secretKey string) (string, error) {
+func CreateToken(userId uint, role string, secretKey string, expSecond int) (string, error) {
 	claims := CustomClaims{
 		userId,
 		role,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-			Issuer:    "myapp",
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(expSecond)).Unix(),
+			Issuer:    "tix-id",
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -46,13 +46,13 @@ func CreateToken(userId uint, role string, secretKey string) (string, error) {
 
 func AuthMiddleware(secretKey string, allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == " " {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is missing"})
+		tokenString, err := c.Cookie("jwt_token")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Access token is missing"})
 			return
 		}
 
-		token, err := jwt.ParseWithClaims(tokenString[7:], &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -83,14 +83,25 @@ func contains(values []string, target string) bool {
 	return false
 }
 
-func SetCookie(c *gin.Context, name string, value string, maxAge int) {
+func SetCookie(c *gin.Context, name string, value string, exp time.Duration) {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
-		MaxAge:   maxAge,
-		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
+		Expires:  time.Now().Add(exp),
+		Path:     "/",
+	}
+	http.SetCookie(c.Writer, cookie)
+}
+func ResetCookie(c *gin.Context, name string) {
+	cookie := &http.Cookie{
+		Name:     name,
+		Value:    "",
+		HttpOnly: true,
+		Secure:   false,
+		Expires:  time.Now(),
+		Path:     "/",
 	}
 	http.SetCookie(c.Writer, cookie)
 }
