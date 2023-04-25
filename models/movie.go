@@ -10,8 +10,7 @@ type Movie struct {
 }
 
 type MovieSchedules struct {
-	Movie
-	Schedules []Schedule
+	Schedules []Schedule `json:"data"`
 }
 
 type MovieSchedulesResponse struct {
@@ -20,8 +19,12 @@ type MovieSchedulesResponse struct {
 }
 
 type MovieSchedule struct {
-	Movie
-	Schedule Schedule
+	Schedule Schedule `json:"data"`
+}
+
+type MovieScheduleResponse struct {
+	Response
+	MovieSchedule
 }
 
 type MoviesResponse struct {

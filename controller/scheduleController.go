@@ -46,16 +46,17 @@ func GetSchedules(c *gin.Context) {
 	var count int
 	err = db.QueryRow("select count(*) from schedule where movie_id = ?", movie.ID).Scan(&count)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			response := models.Response{
-				Status:  404,
-				Message: "the movie have no any schedules!",
-			}
-			c.JSON(http.StatusNotFound, response)
-			return
-		}
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if count < 1 {
+		response := models.Response{
+			Status:  404,
+			Message: "the movie have no any schedules!",
+		}
+		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
@@ -89,7 +90,7 @@ func GetSchedules(c *gin.Context) {
 			Message: "Schedules retrieved successfully",
 		},
 		MovieSchedules: models.MovieSchedules{
-			Movie:     movie,
+			// Movie:     movie,
 			Schedules: schedules,
 		},
 	}
@@ -104,19 +105,100 @@ func GetSchedules(c *gin.Context) {
 // @Produce json
 // @Param movieId path string true "Movie ID"
 // @Param scheduleId path string true "Schedule ID"
-// @Success 200 {object} models.ScheduleResponse
+// @Success 200 {object} models.MovieScheduleResponse
 // @Router /movies/{movieId}/schedules/{scheduleId} [get]
 func GetSchedule(c *gin.Context) {
-	// movieId := c.Query("movieId")
-	// scheduleId := c.Query("scheduleId")
-	var schedule models.Schedule
+	db := config.ConnectDB()
+	defer db.Close()
 
-	responseData := models.ScheduleResponse{
+	movieId := c.Param("movieId")
+	scheduleId := c.Param("scheduleId")
+
+	// get movie data
+	var movie models.Movie
+	// get movie data
+	err := db.QueryRow("select id, title, description, duration, rating, release_date from movie where id = ?", movieId).Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the movie is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// get schedule data
+	var schedule models.Schedule
+	var theatre models.Theatre
+	var branch models.BranchTheatre
+
+	err = db.QueryRow("select sc.id, sc.show_time, sc.price, t.id, t.name, b.id, b.name, b.address from schedule sc join theatre t on t.id = sc.theatre_id join branch b on b.id = t.branch_id where sc.id = ?", scheduleId).Scan(&schedule.ID, &schedule.Showtime, &schedule.Price, &theatre.ID, &theatre.Name, &branch.ID, &branch.Name, &branch.Address)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the schedule is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	branch.Theatre = theatre
+	schedule.Branch = branch
+
+	// verify schedule have any seats
+	var count int
+	err = db.QueryRow("select count(*) from seat where schedule_id = ?", schedule.ID).Scan(&count)
+
+	if count < 1 {
+		response := models.Response{
+			Status:  404,
+			Message: "the schedule have no any seats!",
+		}
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	// get seats data
+	var seats []models.Seat
+	query := "select se.id, se.row, se.seat_number, IF(EXISTS (SELECT 1 FROM ticket t WHERE t.seat_id = se.id), 0, 1) AS availability from seat se where se.schedule_id = ?"
+	rows, err := db.Query(query, schedule.ID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for rows.Next() {
+		var availabilityInt int
+		var seat models.Seat
+		if err := rows.Scan(&seat.ID, &seat.Row, &seat.Number, &availabilityInt); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		availability := availabilityInt == 1
+		seat.Availability = &availability
+		seats = append(seats, seat)
+	}
+	schedule.Seats = &seats
+
+	responseData := models.MovieScheduleResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Schedule retrieved successfully",
 		},
-		Schedule: schedule,
+		MovieSchedule: models.MovieSchedule{
+			Schedule: schedule,
+		},
 	}
 	c.JSON(http.StatusOK, responseData)
 }

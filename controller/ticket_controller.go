@@ -73,7 +73,6 @@ func GetTickets(c *gin.Context) {
 	var branch models.BranchTheatre
 	var theatre models.Theatre
 	for rows.Next() {
-		log.Println("==============")
 		if err := rows.Scan(&ticket.ID, &seat.ID, &seat.Row, &seat.Number, &payment.ID, &payment.Amount, &payment.Status, &schedule.ID, &schedule.Price, &schedule.Showtime, &movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate, &branch.ID, &branch.Name, &branch.Address, &theatre.ID, &theatre.Name); err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
