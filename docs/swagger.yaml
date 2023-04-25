@@ -47,6 +47,17 @@ definitions:
       status:
         type: integer
     type: object
+  models.BranchTheatre:
+    properties:
+      address:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      theatre:
+        $ref: '#/definitions/models.Theatre'
+    type: object
   models.BranchesResponse:
     properties:
       data:
@@ -102,7 +113,7 @@ definitions:
       releaseDate:
         type: string
       title:
-        type: integer
+        type: string
     type: object
   models.MovieResponse:
     properties:
@@ -127,7 +138,7 @@ definitions:
   models.Payment:
     properties:
       amount:
-        type: integer
+        type: number
       id:
         type: integer
       status:
@@ -135,14 +146,14 @@ definitions:
     type: object
   models.PaymentStatus:
     enum:
-    - Pending
-    - Completed
-    - Expired
+    - pending
+    - completed
+    - failed
     type: string
     x-enum-varnames:
     - Pending
     - Completed
-    - Expired
+    - Failed
   models.Response:
     properties:
       message:
@@ -153,13 +164,13 @@ definitions:
   models.Schedule:
     properties:
       branch:
-        $ref: '#/definitions/models.Branch'
+        $ref: '#/definitions/models.BranchTheatre'
       id:
         type: integer
       movie:
         $ref: '#/definitions/models.Movie'
       price:
-        type: integer
+        type: number
       seats:
         items:
           $ref: '#/definitions/models.Seat'
@@ -175,6 +186,21 @@ definitions:
         type: string
       status:
         type: integer
+    type: object
+  models.ScheduleTicket:
+    properties:
+      branch:
+        $ref: '#/definitions/models.BranchTheatre'
+      id:
+        type: integer
+      movie:
+        $ref: '#/definitions/models.Movie'
+      price:
+        type: integer
+      seat:
+        $ref: '#/definitions/models.Seat'
+      showtime:
+        type: string
     type: object
   models.SchedulesResponse:
     properties:
@@ -212,7 +238,7 @@ definitions:
       payment:
         $ref: '#/definitions/models.Payment'
       schedule:
-        $ref: '#/definitions/models.Schedule'
+        $ref: '#/definitions/models.ScheduleTicket'
       seat:
         $ref: '#/definitions/models.Seat'
     type: object
@@ -498,7 +524,54 @@ paths:
       summary: Update Customer
       tags:
       - Customer
-  /customer/{customerId}/ticket/{ticketId}:
+  /customer/{customerId}/tickets:
+    get:
+      consumes:
+      - application/json
+      description: Get all payments
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TicketsResponse'
+      summary: Get Payments
+      tags:
+      - Customer
+    post:
+      consumes:
+      - application/json
+      description: Create Ticket by shedule
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: integer
+      - description: Schedule Detail
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScheduleTicket'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TicketResponse'
+      summary: Create Ticket
+      tags:
+      - Customer
+  /customer/{customerId}/tickets/{ticketId}:
     get:
       consumes:
       - application/json
@@ -524,7 +597,7 @@ paths:
       summary: Get Payment
       tags:
       - Customer
-  /customer/{customerId}/ticket/{ticketId}/payment:
+  /customer/{customerId}/tickets/{ticketId}/payment:
     post:
       consumes:
       - application/json
@@ -548,27 +621,6 @@ paths:
           schema:
             $ref: '#/definitions/models.TicketResponse'
       summary: Confirm Payment
-      tags:
-      - Customer
-  /customer/{customerId}/tickets:
-    get:
-      consumes:
-      - application/json
-      description: Get all payments
-      parameters:
-      - description: Customer ID
-        in: path
-        name: customerId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.TicketsResponse'
-      summary: Get Payments
       tags:
       - Customer
   /customer/auth/login:
@@ -800,6 +852,28 @@ paths:
       summary: Get Schedule
       tags:
       - Customer
+    post:
+      description: Create a schedule for a movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movieId
+        required: true
+        type: string
+      - description: Schedule details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Schedule'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ScheduleResponse'
+      summary: Create a movie schedule
+      tags:
+      - Admin
   /movies/{movieId}/schedules/{scheduleId}:
     get:
       consumes:
@@ -826,33 +900,6 @@ paths:
       summary: Get all schedules for a movie by ID
       tags:
       - Customer
-    post:
-      description: Create a schedule for a movie
-      parameters:
-      - description: Movie ID
-        in: path
-        name: movieId
-        required: true
-        type: string
-      - description: Schedule ID
-        in: path
-        name: scheduleId
-        required: true
-        type: string
-      - description: Schedule details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.Schedule'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.ScheduleResponse'
-      summary: Create a movie schedule
-      tags:
-      - Admin
   /movies/search:
     get:
       consumes:

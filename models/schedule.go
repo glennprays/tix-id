@@ -13,7 +13,7 @@ type Schedule struct {
 
 type ScheduleTicket struct {
 	ID       int            `json:"id"`
-	Price    *int           `json:"price,omitempty"`
+	Price    *float64       `json:"price,omitempty"`
 	Showtime *time.Time     `json:"showtime,omitempty"`
 	Movie    *Movie         `json:"movie,omitempty"`
 	Branch   *BranchTheatre `json:"branch,omitempty"`

@@ -1,10 +1,10 @@
 package models
 
 type Branch struct {
-	ID       *int      `json:"id,omitempty"`
-	Name     int       `json:"name"`
-	Address  string    `json:"address"`
-	Theatres []Theatre `json:"theatres"`
+	ID       *int       `json:"id,omitempty"`
+	Name     int        `json:"name"`
+	Address  string     `json:"address"`
+	Theatres *[]Theatre `json:"theatres,omitempty"`
 }
 
 type BranchTheatre struct {

@@ -236,9 +236,119 @@ func GetPayment(c *gin.Context) {
 func ConfirmPayment(c *gin.Context) {
 
 	// customerId := c.Param("customerId")
-	// ticketId := c.Param("ticketId")
+
+	db := config.ConnectDB()
+	defer db.Close()
+	// TODO:get by customer id and verify with id in cookies
+	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ticketId, err := strconv.Atoi(c.Param("ticketId"))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	// if customerIdParam != int(customerId) {
+	// 	response := models.Response{
+	// 		Status:  200,
+	// 		Message: "The user id didn't matched",
+	// 	}
+	// 	c.JSON(http.StatusOK, response)
+	// 	return
+	// }
+
+	// dummy
+	customerId := customerIdParam
 
 	var ticket models.Ticket
+	ticket.ID = ticketId
+
+	// check if the ticket id matched with customer
+	var payment models.Payment
+	var count int
+	var paymentID sql.NullInt64
+	error := db.QueryRow("select count(*), p.id from ticket t join payment p on p.id = t.payment_id where t.id = ? and t.customer_id = ? and p.payment_status = 'pending'", ticket.ID, customerId).Scan(&count, &paymentID)
+	if error != nil {
+		log.Println(error)
+		c.JSON(http.StatusBadRequest, gin.H{"error": error.Error()})
+		return
+	}
+
+	if count != 1 || !paymentID.Valid {
+		response := models.Response{
+			Status:  404,
+			Message: "either ticket and customer didn't matched or ticket is paid",
+		}
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	payment.ID = int(paymentID.Int64)
+
+	// set payment into completed
+	res, err := db.Exec("update payment set payment_status = 'completed' where id = ?", payment.ID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+		return
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		response := models.Response{
+			Status:  404,
+			Message: "payment not found",
+		}
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	// get seat data
+	var seat models.Seat
+	error = db.QueryRow("select s.id, s.row, s.seat_number from seat s join ticket t on s.id = t.schedule_id where t.id = ?", ticket.ID).Scan(&seat.ID, &seat.Row, &seat.Number)
+	if error != nil {
+		log.Println(error)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+		return
+	}
+	ticket.Seat = seat
+
+	// get payment data
+	error = db.QueryRow("select amount, payment_status from payment where id = ?", payment.ID).Scan(&payment.Amount, &payment.Status)
+	if error != nil {
+		log.Println(error)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+		return
+	}
+	ticket.Payment = payment
+
+	// get schedule data
+	var schedule models.ScheduleTicket
+	var movie models.Movie
+	var theatre models.Theatre
+	var branch models.BranchTheatre
+	error = db.QueryRow("select m.id, m.title, m.description, m.duration, m.rating, m.release_date, t.id, t.name, b.id, b.name, b.address, s.id, s.show_time, s.price from movie m join schedule s on s.movie_id = m.id join theatre t on t.id = s.theatre_id join branch b on b.id = t.branch_id join ticket tc on tc.schedule_id = s.id where tc.id = ?", ticket.ID).Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate, &theatre.ID, &theatre.Name, &branch.ID, &branch.Name, &branch.Address, &schedule.ID, &schedule.Showtime, &schedule.Price)
+	if error != nil {
+		log.Println(error)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+		return
+	}
+	branch.Theatre = theatre
+	schedule.Branch = &branch
+	schedule.Movie = &movie
+	ticket.Schedule = schedule
+
 	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
