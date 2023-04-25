@@ -7,6 +7,13 @@ type Branch struct {
 	Theatres []Theatre `json:"theatres"`
 }
 
+type BranchTheatre struct {
+	ID      *int    `json:"id,omitempty"`
+	Name    string  `json:"name"`
+	Address string  `json:"address"`
+	Theatre Theatre `json:"theatre"`
+}
+
 type BranchesResponse struct {
 	Response
 	Branches []Branch `json:"data"`

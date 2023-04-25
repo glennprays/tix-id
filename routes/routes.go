@@ -28,6 +28,10 @@ func SetupRouter() *gin.Engine {
 			{
 				customer.POST("/registration", controller.AddCustomer)
 				customer.POST("/auth/login", controller.LoginCustomer)
+				customerId := customer.Group("/:customerId")
+				{
+					customerId.POST("/tickets", controller.CreateTicket)
+				}
 			}
 
 			admin := v1.Group("/admin")
