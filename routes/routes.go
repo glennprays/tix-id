@@ -17,7 +17,6 @@ func SetupRouter() *gin.Engine {
 			"message": "Welcome to TIX-ID",
 		})
 	})
-
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
@@ -26,6 +25,11 @@ func SetupRouter() *gin.Engine {
 			{
 				customer.POST("/registration", controller.AddCustomer)
 				customer.POST("/auth/login", controller.LoginCustomer)
+			}
+
+			admin := v1.Group("/admin")
+			{
+				admin.POST("/auth/login", controller.LoginAdmin)
 			}
 		}
 	}

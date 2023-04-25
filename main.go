@@ -17,12 +17,12 @@ func init() {
 
 func main() {
 
-	docs.SwaggerInfo.Title = "Swagger Example API"
-	docs.SwaggerInfo.Description = "This is a sample server Movie."
+	docs.SwaggerInfo.Title = "TIX-ID API Documentation"
+	docs.SwaggerInfo.Description = "Ticketing Application"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	r := routes.SetupRouter()
-	r.Run()
+	r.Run(":8080")
 }
