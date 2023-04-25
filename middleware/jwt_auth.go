@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"crypto/rand"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -11,22 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var jwtKey = os.Getenv("JWT_KEY")
+var tokenName = "token"
+
 type CustomClaims struct {
 	UserId uint   `json:"user_id"`
 	Role   string `json:"role"`
 	jwt.StandardClaims
 }
 
-func generateSecretKey() ([]byte, error) {
-	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		return nil, err
-	}
-	return key, nil
-}
-
-func CreateToken(userId uint, role string, secretKey string, expSecond int) (string, error) {
+func CreateToken(c *gin.Context, userId uint, role string, expSecond int) {
 	claims := CustomClaims{
 		userId,
 		role,
@@ -36,17 +31,17 @@ func CreateToken(userId uint, role string, secretKey string, expSecond int) (str
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(secretKey))
+	signedToken, err := token.SignedString([]byte(jwtKey))
 	if err != nil {
-		return "", err
+		log.Println(err)
 	}
 
-	return signedToken, nil
+	setCookie(c, signedToken, time.Second*time.Duration(expSecond))
 }
 
-func AuthMiddleware(secretKey string, allowedRoles ...string) gin.HandlerFunc {
+func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString, err := c.Cookie("jwt_token")
+		tokenString, err := c.Cookie(tokenName)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Access token is missing"})
 			return
@@ -56,7 +51,7 @@ func AuthMiddleware(secretKey string, allowedRoles ...string) gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return []byte(secretKey), nil
+			return []byte(jwtKey), nil
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -83,9 +78,9 @@ func contains(values []string, target string) bool {
 	return false
 }
 
-func SetCookie(c *gin.Context, name string, value string, exp time.Duration) {
+func setCookie(c *gin.Context, value string, exp time.Duration) {
 	cookie := &http.Cookie{
-		Name:     name,
+		Name:     tokenName,
 		Value:    value,
 		HttpOnly: true,
 		Secure:   false,
@@ -94,9 +89,9 @@ func SetCookie(c *gin.Context, name string, value string, exp time.Duration) {
 	}
 	http.SetCookie(c.Writer, cookie)
 }
-func ResetCookie(c *gin.Context, name string) {
+func ResetUserToken(c *gin.Context) {
 	cookie := &http.Cookie{
-		Name:     name,
+		Name:     tokenName,
 		Value:    "",
 		HttpOnly: true,
 		Secure:   false,
@@ -106,9 +101,9 @@ func ResetCookie(c *gin.Context, name string) {
 	http.SetCookie(c.Writer, cookie)
 }
 
-func GetUserIdAndRoleFromCookie(c *gin.Context, secretKey string) (uint, string, error) {
+func GetUserIdAndRoleFromCookie(c *gin.Context) (uint, string, error) {
 	// Get JWT token from cookie
-	cookie, err := c.Cookie("jwt-token")
+	cookie, err := c.Cookie(tokenName)
 	if err != nil {
 		return 0, "", err
 	}
@@ -124,7 +119,7 @@ func GetUserIdAndRoleFromCookie(c *gin.Context, secretKey string) (uint, string,
 		}
 
 		// Return secret key as signing key
-		return []byte(secretKey), nil
+		return []byte(jwtKey), nil
 	})
 	if err != nil {
 		return 0, "", err

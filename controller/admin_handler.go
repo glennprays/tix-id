@@ -3,8 +3,6 @@ package controller
 import (
 	"log"
 	"net/http"
-	"os"
-	"time"
 	"tix-id/config"
 	"tix-id/middleware"
 	"tix-id/models"
@@ -41,14 +39,8 @@ func LoginAdmin(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	} else {
-		tokenString, err := middleware.CreateToken(uint(admin.ID), "admin", os.Getenv("JWT_KEY"), 3600)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
-			return
-		}
+		middleware.CreateToken(c, uint(admin.ID), "admin", 3600)
 
-		middleware.SetCookie(c, "jwt_token", tokenString, time.Second*3600)
 		responseData := models.AdminResponse{
 			Response: models.Response{
 				Status:  200,
