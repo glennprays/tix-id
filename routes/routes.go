@@ -31,6 +31,8 @@ func SetupRouter() *gin.Engine {
 				customerId := customer.Group("/:customerId")
 				{
 					customerId.POST("/tickets", controller.CreateTicket)
+					customerId.GET("/tickets", controller.GetTickets)
+					customerId.GET("/tickets/:ticketId", controller.GetTicket)
 					customerId.POST("/tickets/:ticketId/payment", controller.ConfirmPayment)
 				}
 			}
