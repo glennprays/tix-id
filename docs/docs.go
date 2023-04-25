@@ -26,7 +26,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Auth"
                 ],
                 "summary": "Login Admin",
                 "parameters": [
@@ -51,7 +51,7 @@ const docTemplate = `{
             }
         },
         "/auth/logout": {
-            "post": {
+            "delete": {
                 "description": "Logout Account admin and customer",
                 "tags": [
                     "Auth"
@@ -59,9 +59,9 @@ const docTemplate = `{
                 "summary": "Logout Account",
                 "responses": {
                     "200": {
-                        "description": "{\"message\": \"Logout successful\"}",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.Response"
                         }
                     }
                 }
@@ -347,7 +347,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer"
+                    "Auth"
                 ],
                 "summary": "Login Customer",
                 "parameters": [

@@ -13,7 +13,7 @@ import (
 // LoginAdmin godoc
 // @Summary Login Admin
 // @Description Login Admin Account
-// @Tags Admin
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param body body models.LoginRequest true "Login details"
@@ -58,11 +58,12 @@ func LoginAdmin(c *gin.Context) {
 // @Summary Logout Account
 // @Description Logout Account admin and customer
 // @Tags Auth
-// @Success 200 {string} string "{"message": "Logout successful"}"
-// @Router /auth/logout [post]
+// @Success 200 {object} models.Response
+// @Router /auth/logout [delete]
 func LogoutAccount(c *gin.Context) {
 	middleware.ResetUserToken(c)
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Logout successful",
+	c.JSON(http.StatusOK, models.Response{
+		Status:  200,
+		Message: "Logout successful",
 	})
 }
