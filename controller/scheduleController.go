@@ -60,13 +60,11 @@ func GetSchedule(c *gin.Context) {
 // @Description Create a schedule for a movie
 // @Tags Admin
 // @Param movieId path string true "Movie ID"
-// @Param scheduleId path string true "Schedule ID"
 // @Param body body models.Schedule true "Schedule details"
 // @Success 201 {object} models.ScheduleResponse
-// @Router /movies/{movieId}/schedules/{scheduleId} [post]
+// @Router /movies/{movieId}/schedules [post]
 func CreateMovieSchedule(c *gin.Context) {
 	// movieId := c.Query("movieId")
-	// scheduleId := c.Query("scheduleId")
 	var schedule models.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -2,16 +2,16 @@ package models
 
 type Payment struct {
 	ID     int           `json:"id"`
-	Amount int           `json:"amount"`
+	Amount float64       `json:"amount"`
 	Status PaymentStatus `json:"status"`
 }
 
 type PaymentStatus string
 
 const (
-	Pending   PaymentStatus = "Pending"
-	Completed PaymentStatus = "Completed"
-	Expired   PaymentStatus = "Expired"
+	Pending   PaymentStatus = "pending"
+	Completed PaymentStatus = "completed"
+	Failed    PaymentStatus = "failed"
 )
 
 type PaymentResponse struct {

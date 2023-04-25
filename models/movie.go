@@ -2,7 +2,7 @@ package models
 
 type Movie struct {
 	ID          *int    `json:"id,omitempty"`
-	Title       int     `json:"title"`
+	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Duration    int     `json:"duration"`
 	Rating      float32 `json:"rating"`
