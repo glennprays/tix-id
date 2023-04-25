@@ -106,27 +106,35 @@ func CreateTicket(c *gin.Context) {
 	var seat models.Seat
 	seat.ID = schedule.Seat.ID
 
-	// verify the seat mached with schedule and seat is not taken yet
+	// verify  seat is not taken yet
 	var count int
-	error = db.QueryRow("select count(*) from seat where id = ? and schedule_id = ?", seat.ID, schedule.ID).Scan(&count)
+	error = db.QueryRow("select count(*) from ticket where seat_id = ? and schedule_id = ?", seat.ID, schedule.ID).Scan(&count)
 	if error != nil {
 		log.Println(error)
 		c.JSON(http.StatusBadRequest, gin.H{"error": error.Error()})
 		return
 	}
 
-	if count < 1 {
+	if count > 0 {
 		response := models.Response{
 			Status:  200,
-			Message: "Either the seat is taken or not matched with the schedule",
+			Message: "the seat is taken",
 		}
 		c.JSON(http.StatusOK, response)
 		return
 	}
 
-	// get seat data
+	// get seat data and verify the seat is matched with the schdule
 	error = db.QueryRow("select row, seat_number from seat where id = ? and schedule_id = ?", seat.ID, schedule.ID).Scan(&seat.Row, &seat.Number)
 	if error != nil {
+		if error == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the seat is not match with the schedule",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
 		log.Println(error)
 		c.JSON(http.StatusBadRequest, gin.H{"error": error.Error()})
 		return
@@ -171,6 +179,7 @@ func CreateTicket(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	schedule.Seat = nil
 	var ticket models.Ticket
 	ticket.ID = int(lastInsertID)
 	ticket.Payment = payment
