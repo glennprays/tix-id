@@ -9,6 +9,24 @@ type Movie struct {
 	ReleaseDate string  `json:"releaseDate"`
 }
 
+type MovieSchedules struct {
+	Schedules []Schedule `json:"data"`
+}
+
+type MovieSchedulesResponse struct {
+	Response
+	MovieSchedules
+}
+
+type MovieSchedule struct {
+	Schedule Schedule `json:"data"`
+}
+
+type MovieScheduleResponse struct {
+	Response
+	MovieSchedule
+}
+
 type MoviesResponse struct {
 	Response
 	Movies []Movie `json:"data"`
