@@ -53,3 +53,16 @@ func LoginAdmin(c *gin.Context) {
 	}
 
 }
+
+// LogoutAccount godoc
+// @Summary Logout Account
+// @Description Logout Account admin and customer
+// @Tags Auth
+// @Success 200 {string} string "{"message": "Logout successful"}"
+// @Router /auth/logout [post]
+func LogoutAccount(c *gin.Context) {
+	middleware.ResetUserToken(c)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logout successful",
+	})
+}
