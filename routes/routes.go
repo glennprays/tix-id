@@ -41,6 +41,14 @@ func SetupRouter() *gin.Engine {
 			{
 				admin.POST("/auth/login", controller.LoginAdmin)
 			}
+
+			movie := v1.Group("/movies")
+			{
+				movieId := movie.Group("/:movieId")
+				{
+					movieId.GET("/schedules", controller.GetSchedules)
+				}
+			}
 		}
 	}
 

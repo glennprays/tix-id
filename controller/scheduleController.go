@@ -1,7 +1,11 @@
 package controller
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
+	"strconv"
+	"tix-id/config"
 	"tix-id/models"
 
 	"github.com/gin-gonic/gin"
@@ -14,18 +18,80 @@ import (
 // @Param movieId path string true "movie id"
 // @Accept json
 // @Produce json
-// @Success 200 {object} models.SchedulesResponse
+// @Success 200 {object} models.MovieSchedulesResponse
 // @Router /movies/{movieId}/schedules [get]
 func GetSchedules(c *gin.Context) {
-	// movieId := c.Query("movieId")
-	var schedules []models.Schedule
+	db := config.ConnectDB()
+	defer db.Close()
 
-	responseData := models.SchedulesResponse{
+	movieId, err := strconv.Atoi(c.Param("movieId"))
+	var movie models.Movie
+	// get movie data
+	err = db.QueryRow("select id, title, description, duration, rating, release_date from movie where id = ?", movieId).Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the movie is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// check movie schedule exist
+	var count int
+	err = db.QueryRow("select count(*) from schedule where movie_id = ?", movie.ID).Scan(&count)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the movie have no any schedules!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// get Schedules
+	var schedules []models.Schedule
+	query := "select sc.id, sc.show_time, sc.price, t.id, t.name, b.id, b.name, b.address from schedule sc join theatre t on t.id = sc.theatre_id join branch b on b.id = t.branch_id where sc.movie_id = ?"
+	rows, err := db.Query(query, movie.ID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for rows.Next() {
+		var schedule models.Schedule
+		var theatre models.Theatre
+		var branch models.BranchTheatre
+		if err := rows.Scan(&schedule.ID, &schedule.Showtime, &schedule.Price, &theatre.ID, &theatre.Name, &branch.ID, &branch.Name, &branch.Address); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		branch.Theatre = theatre
+		schedule.Branch = branch
+		schedules = append(schedules, schedule)
+	}
+
+	responseData := models.MovieSchedulesResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Schedules retrieved successfully",
 		},
-		Schedules: schedules,
+		MovieSchedules: models.MovieSchedules{
+			Movie:     movie,
+			Schedules: schedules,
+		},
 	}
 	c.JSON(http.StatusOK, responseData)
 }
