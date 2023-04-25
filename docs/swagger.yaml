@@ -260,15 +260,15 @@ paths:
             $ref: '#/definitions/models.AdminResponse'
       summary: Login Admin
       tags:
-      - Admin
+      - Auth
   /auth/logout:
-    post:
+    delete:
       description: Logout Account admin and customer
       responses:
         "200":
-          description: '{"message": "Logout successful"}'
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/models.Response'
       summary: Logout Account
       tags:
       - Auth
@@ -592,7 +592,7 @@ paths:
             $ref: '#/definitions/models.CustomerResponse'
       summary: Login Customer
       tags:
-      - Customer
+      - Auth
   /customer/registration:
     post:
       consumes:

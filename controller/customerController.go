@@ -37,7 +37,7 @@ func AddCustomer(c *gin.Context) {
 // LoginCustomer godoc
 // @Summary Login Customer
 // @Description Login Customer Account
-// @Tags Customer
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param body body models.LoginRequest true "Login details"

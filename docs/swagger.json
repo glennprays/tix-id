@@ -14,7 +14,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Auth"
                 ],
                 "summary": "Login Admin",
                 "parameters": [
@@ -39,7 +39,7 @@
             }
         },
         "/auth/logout": {
-            "post": {
+            "delete": {
                 "description": "Logout Account admin and customer",
                 "tags": [
                     "Auth"
@@ -47,9 +47,9 @@
                 "summary": "Logout Account",
                 "responses": {
                     "200": {
-                        "description": "{\"message\": \"Logout successful\"}",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.Response"
                         }
                     }
                 }
@@ -335,7 +335,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Customer"
+                    "Auth"
                 ],
                 "summary": "Login Customer",
                 "parameters": [
