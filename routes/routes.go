@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"tix-id/controller"
+	"tix-id/middleware"
 
 	"github.com/gin-gonic/gin" // swagger embed files
 	swaggerFiles "github.com/swaggo/files"
@@ -21,7 +22,9 @@ func SetupRouter() *gin.Engine {
 	{
 		v1 := api.Group("/v1")
 		{
+			v1.DELETE("/auth/logout", middleware.AuthMiddleware("admin", "customer"), controller.LogoutAccount)
 			customer := v1.Group("/customer")
+
 			{
 				customer.POST("/registration", controller.AddCustomer)
 				customer.POST("/auth/login", controller.LoginCustomer)

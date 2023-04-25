@@ -50,6 +50,23 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Logout Account admin and customer",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout Account",
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Logout successful\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/branches": {
             "get": {
                 "description": "Get a branches by movie_id and branches_id.",

@@ -261,6 +261,17 @@ paths:
       summary: Login Admin
       tags:
       - Admin
+  /auth/logout:
+    post:
+      description: Logout Account admin and customer
+      responses:
+        "200":
+          description: '{"message": "Logout successful"}'
+          schema:
+            type: string
+      summary: Logout Account
+      tags:
+      - Auth
   /branches:
     get:
       consumes:
