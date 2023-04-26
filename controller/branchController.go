@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	"tix-id/config"
 	"tix-id/models"
 
@@ -115,12 +118,56 @@ func GetBranches(c *gin.Context) {
 // @Success 200 {object} models.BranchesResponse
 // @Router /branches/{branchId} [get]
 func GetBranch(c *gin.Context) {
-	// branchId := c.Query("branchId")
+	db := config.ConnectDB()
+	defer db.Close()
+	branchId, err := strconv.Atoi(c.Param("branchId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
+
 	var branch models.Branch
+	err = db.QueryRow("Select id,name,address from branch where id =?", branchId).Scan(&branch.ID, &branch.Name, &branch.Address)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the branch is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	//get theatre
+
+	var theatres []models.Theatre
+	theatreId, err := db.Query("SELECT id, name FROM theatre WHERE branch_id = ?", branch.ID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for theatreId.Next() {
+		var theatre models.Theatre
+		err := theatreId.Scan(&theatre.ID, &theatre.Name)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		theatres = append(theatres, theatre)
+	}
+	//add theatres to branch
+	branch.Theatres = &theatres
+	// Create a BranchesResponse struct with the retrieved branches and send it as a JSON response
 	responseData := models.BranchResponse{
 		Response: models.Response{
 			Status:  200,
-			Message: "Branch updated successfully",
+			Message: "Branches retrieved successfully",
 		},
 		Branch: branch,
 	}
