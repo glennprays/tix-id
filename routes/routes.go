@@ -57,6 +57,10 @@ func SetupRouter() *gin.Engine {
 			branches := v1.Group("/branches")
 			{
 				branches.GET("/", controller.GetBranches)
+				branchId := branches.Group("/:branchId")
+				{
+					branchId.GET("/branch", controller.GetBranch)
+				}
 			}
 
 		}
