@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 	"tix-id/config"
 	"tix-id/models"
 
@@ -147,10 +148,40 @@ func CreateMovie(c *gin.Context) {
 // @Success 200 {object} models.MovieResponse
 // @Router /movies/{movieId} [put]
 func UpdateMovie(c *gin.Context) {
-	// movieId := c.Query("movieId")
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+	// Get the movie ID from the request URL parameter
+	movieID, err := strconv.Atoi(c.Param("movieId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID"})
+		return
+	}
+
+	// Bind the updated movie data from the request body to the movie variable
 	var movie models.Movie
 	if err := c.ShouldBindJSON(&movie); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	movie.ID = movieID
+	// Update movie in the database
+	result, err := db.Exec("UPDATE movie SET title=?, description=?, duration=?, rating=?, release_date=? WHERE id=?", movie.Title, movie.Description, movie.Duration, movie.Rating, movie.ReleaseDate, movie.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Movie not found"})
 		return
 	}
 
