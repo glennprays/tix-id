@@ -49,6 +49,7 @@ func SetupRouter() *gin.Engine {
 				{
 					movieId.GET("/schedules", controller.GetSchedules)
 					movieId.GET("/schedules/:scheduleId", controller.GetSchedule)
+					movieId.PUT("/", controller.UpdateMovie)
 				}
 			}
 
