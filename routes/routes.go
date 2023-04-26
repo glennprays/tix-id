@@ -50,6 +50,12 @@ func SetupRouter() *gin.Engine {
 					movieId.GET("/schedules/:scheduleId", controller.GetSchedule)
 				}
 			}
+
+			branches := v1.Group("/branches")
+			{
+				branches.GET("/", controller.GetBranches)
+			}
+
 		}
 	}
 

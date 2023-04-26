@@ -2,7 +2,7 @@ package models
 
 type Branch struct {
 	ID       *int       `json:"id,omitempty"`
-	Name     int        `json:"name"`
+	Name     string     `json:"name"`
 	Address  string     `json:"address"`
 	Theatres *[]Theatre `json:"theatres,omitempty"`
 }
