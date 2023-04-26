@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"tix-id/config"
@@ -203,7 +204,44 @@ func UpdateMovie(c *gin.Context) {
 // @Success 204 {object} models.Response
 // @Router /movies/{movieId} [delete]
 func DeleteMovie(c *gin.Context) {
-	// movieId := c.Query("movieId")
+	db := config.ConnectDB()
+	defer db.Close()
+
+	id := c.Param("movieId")
+	log.Println("id: ", id)
+	// Check if the movie exists
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM movie WHERE id=?", id).Scan(&count)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if count == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Movie not found"})
+		return
+	}
+
+	// Delete the movie
+	result, err := db.Exec("DELETE FROM movie WHERE id=?", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete movie"})
+		return
+	}
+
+	log.Printf("Movie with id %s has been deleted", id)
+
 	responseData := models.Response{
 		Status:  200,
 		Message: "Movie deleted successfully",
