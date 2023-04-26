@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"tix-id/config"
 	"tix-id/models"
 
 	"github.com/gin-gonic/gin"
@@ -94,12 +95,37 @@ func GetMovieById(c *gin.Context) {
 // @Success 201 {object} models.MovieResponse
 // @Router /movies [post]
 func CreateMovie(c *gin.Context) {
+	// Parse request body to Movie struct
 	var movie models.Movie
 	if err := c.ShouldBindJSON(&movie); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+
+	// Insert the movie into the database
+	result, err := db.Exec("INSERT INTO movie (title, description, duration, rating, release_date) VALUES (?, ?, ?, ?, ?)", movie.Title, movie.Description, movie.Duration, movie.Rating, movie.ReleaseDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
+	// Get the ID of the inserted movie
+	id, err := result.LastInsertId()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted movie"})
+		return
+	}
+
+	// Set the ID of the movie to the inserted ID
+	movie.ID = int(id)
+
+	// Create a MovieResponse struct with the inserted movie and send it as a JSON response
 	responseData := models.MovieResponse{
 		Response: models.Response{
 			Status:  200,
