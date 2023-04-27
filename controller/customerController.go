@@ -50,13 +50,38 @@ func LoginCustomer(c *gin.Context) {
 		return
 	}
 
+<<<<<<< HEAD
 	var customer models.Customer
+=======
+	// Check if customer exists and password is correct
+	customer, err := models.GetCustomerByEmail(login.Email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
+		return
+	}
+	if !models.VerifyPassword(customer.Password, login.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	// Generate JWT token
+	token, err := models.GenerateToken(customer.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+>>>>>>> 908827f ( feature login customer)
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Login successful",
 		},
 		Customer: customer,
+<<<<<<< HEAD
+=======
+		Token:    token,
+>>>>>>> 908827f ( feature login customer)
 	}
 
 	c.JSON(http.StatusCreated, responseData)

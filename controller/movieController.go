@@ -21,6 +21,7 @@ import (
 // @Produce json
 // @Success 200 {object} models.MoviesResponse
 // @Router /movies [get]
+
 func GetMovies(c *gin.Context) {
 	var movies []models.Movie
 
@@ -67,18 +68,34 @@ func GetMovies(c *gin.Context) {
 // @Success 200 {object} models.MoviesResponse
 // @Router /movies/search [get]
 func SearchMovies(c *gin.Context) {
-	// TODO: Implement logic to search movies by title and genre
 	var movies []models.Movie
+	title := c.Query("title")
+	genre := c.Query("genre")
+	if title != "" && genre != "" {
+		models.DB.Where("title LIKE ? AND genre LIKE ?", "%"+title+"%", "%"+genre+"%").Find(&movies)
+	} else if title != "" {
+		models.DB.Where("title LIKE ?", "%"+title+"%").Find(&movies)
+	} else if genre != "" {
+		models.DB.Where("genre LIKE ?", "%"+genre+"%").Find(&movies)
+	} else {
+		c.JSON(http.StatusBadRequest, models.Response{
+			Status:  http.StatusBadRequest,
+			Message: "Please provide either title or genre to search for movies",
+		})
+		return
+	}
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
-			Status:  200,
-			Message: "Searched movies retrieved successfully",
+			Status:  http.StatusOK,
+			Message: "Movies retrieved successfully",
 		},
 		Movies: movies,
 	}
+
 	c.JSON(http.StatusOK, responseData)
 }
+
 
 // GetMovieById godoc
 // @Summary Get a movie by ID
@@ -99,7 +116,7 @@ func GetMovieById(c *gin.Context) {
 			Message: "Movie retrieved successfully",
 		},
 		Movie: movie,
-	}
+	} 
 	c.JSON(http.StatusOK, responseData)
 }
 

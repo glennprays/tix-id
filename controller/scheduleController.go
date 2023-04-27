@@ -2,11 +2,17 @@ package controller
 
 import (
 	"database/sql"
+<<<<<<< HEAD
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+=======
+	"log"
+	"net/http"
+	"strconv"
+>>>>>>> 908827f ( feature login customer)
 	"tix-id/config"
 	"tix-id/models"
 
@@ -284,6 +290,7 @@ func CreateMovieSchedule(c *gin.Context) {
 // @Success 204 {object} models.ScheduleResponse
 // @Router /movies/{movieId}/schedule/{scheduleId} [put]
 func UpdateMovieSchedule(c *gin.Context) {
+<<<<<<< HEAD
 	// Connect to database
 	db := config.ConnectDB()
 
@@ -355,12 +362,21 @@ func UpdateMovieSchedule(c *gin.Context) {
 		return
 	}
 
+=======
+	// movieId := c.Query("movieId")
+	// scheduleId := c.Query("scheduleId")
+	var schedule models.Schedule
+>>>>>>> 908827f ( feature login customer)
 	responseData := models.ScheduleResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Schedule updated successfully",
 		},
+<<<<<<< HEAD
 		Schedule: schedulee,
+=======
+		Schedule: schedule,
+>>>>>>> 908827f ( feature login customer)
 	}
 	c.JSON(http.StatusOK, responseData)
 }
@@ -375,6 +391,7 @@ func UpdateMovieSchedule(c *gin.Context) {
 // @Success 204 {object} models.Response
 // @Router /movies/{movieId}/schedule/{scheduleId} [delete]
 func DeleteSchedule(c *gin.Context) {
+<<<<<<< HEAD
 	scheduleID, err := strconv.Atoi(c.Param("scheduleId"))
 	// Connect to database
 	db := config.ConnectDB()
@@ -416,6 +433,12 @@ func DeleteSchedule(c *gin.Context) {
 
 	responseData := models.Response{
 		Status:  http.StatusOK,
+=======
+	// movieId := c.Query("movieId")
+	// scheduleId := c.Query("scheduleId")
+	responseData := models.Response{
+		Status:  200,
+>>>>>>> 908827f ( feature login customer)
 		Message: "Schedule deleted successfully",
 	}
 	c.JSON(http.StatusOK, responseData)
