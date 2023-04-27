@@ -50,9 +50,7 @@ func LoginCustomer(c *gin.Context) {
 		return
 	}
 
-<<<<<<< HEAD
 	var customer models.Customer
-=======
 	// Check if customer exists and password is correct
 	customer, err := models.GetCustomerByEmail(login.Email)
 	if err != nil {
@@ -71,17 +69,13 @@ func LoginCustomer(c *gin.Context) {
 		return
 	}
 
->>>>>>> 908827f ( feature login customer)
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Login successful",
 		},
 		Customer: customer,
-<<<<<<< HEAD
-=======
 		Token:    token,
->>>>>>> 908827f ( feature login customer)
 	}
 
 	c.JSON(http.StatusCreated, responseData)

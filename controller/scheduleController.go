@@ -2,17 +2,14 @@ package controller
 
 import (
 	"database/sql"
-<<<<<<< HEAD
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
-=======
 	"log"
 	"net/http"
 	"strconv"
->>>>>>> 908827f ( feature login customer)
 	"tix-id/config"
 	"tix-id/models"
 
