@@ -468,12 +468,11 @@ func ConfirmPayment(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
 		return
 	}
-	log.Println(ticket.Seat.Number)
 	schedule.Seat = &models.Seat{}
 	schedule.Seat.Number = ticket.Seat.Number
 	schedule.Seat.Number = ticket.Seat.Row
 	content := GenerateEmail(customer, payment, schedule)
-	SendEmail(content, customer.Email)
+	go SendEmail(content, customer.Email, "[TIX-ID] Payment Successful")
 
 	responseData := models.TicketResponse{
 		Response: models.Response{
