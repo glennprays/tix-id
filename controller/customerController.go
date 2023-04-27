@@ -142,6 +142,7 @@ func GetCustomer(c *gin.Context) {
 		return
 	}
 	customer.ID = customerId
+
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
@@ -164,9 +165,41 @@ func GetCustomer(c *gin.Context) {
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/{customerId}/profile [put]
 func UpdateCustomer(c *gin.Context) {
-	// customerId := c.Param("customerId")
+	// Connect to database
+	db := config.ConnectDB()
 
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+	// customerId := c.Param("customerId")
 	var customer models.Customer
+	if err := c.ShouldBindJSON(&customer); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	customerId, err := strconv.Atoi(c.Param("customerId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve customer from database"})
+		return
+	}
+
+	result, err := db.Exec("UPDATE customer SET username=?,password=?,name=?,email=?,phone=? WHERE id=?", customer.Username, customer.Password, customer.Name, customer.Email, customer.Phone, customerId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		return
+	}
+	customer.ID = customerId
+
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
