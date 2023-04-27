@@ -24,9 +24,25 @@ import (
 func GetMovies(c *gin.Context) {
 	var movies []models.Movie
 
-	// showTime := c.Query("show_time")
-	// branch := c.Query("branch")
-	// rating := c.Query("rating")
+	// Menambahkan kondisi pencarian berdasarkan parameter show_time
+	if showTime := c.Query("show_time"); showTime != "" {
+		query += " AND show_time = ?"
+		params = append(params, showTime)
+	}
+
+	// Menambahkan kondisi pencarian berdasarkan parameter branch
+	if branch := c.Query("branch"); branch != "" {
+		query += " AND branch = ?"
+		params = append(params, branch)
+	}
+
+	// Menambahkan kondisi pencarian berdasarkan parameter rating
+	if rating := c.Query("rating"); rating != "" {
+		query += " AND rating = ?"
+		params = append(params, rating)
+	}
+
+
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
