@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
+	"strconv"
 	"tix-id/config"
 	"tix-id/models"
 
@@ -112,10 +115,33 @@ func LoginCustomer(c *gin.Context) {
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/{customerId}/profile [get]
 func GetCustomer(c *gin.Context) {
+	// Connect to database
+	db := config.ConnectDB()
 
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
 	// customerId := c.Param("customerId")
-
+	customerId, err := strconv.Atoi(c.Param("customerId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve customer from database"})
+		return
+	}
 	var customer models.Customer
+	err = db.QueryRow("Select username,name,email,phone from customer where id =?", customerId).Scan(&customer.Username, &customer.Name, &customer.Email, &customer.Phone)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the branch is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	customer.ID = customerId
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
