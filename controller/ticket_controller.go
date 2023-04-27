@@ -8,6 +8,7 @@ import (
 	"tix-id/config"
 	"tix-id/middleware"
 	"tix-id/models"
+	"tix-id/tool"
 
 	"github.com/gin-gonic/gin"
 )
@@ -471,8 +472,8 @@ func ConfirmPayment(c *gin.Context) {
 	schedule.Seat = &models.Seat{}
 	schedule.Seat.Number = ticket.Seat.Number
 	schedule.Seat.Number = ticket.Seat.Row
-	content := GenerateEmail(customer, payment, schedule)
-	go SendEmail(content, customer.Email, "[TIX-ID] Payment Successful")
+	content := tool.GeneratePaymentEmail(customer, payment, schedule)
+	go tool.SendEmail(content, customer.Email, "[TIX-ID] Payment Successful")
 
 	responseData := models.TicketResponse{
 		Response: models.Response{

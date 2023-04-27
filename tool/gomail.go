@@ -1,4 +1,4 @@
-package controller
+package tool
 
 import (
 	"os"
@@ -22,7 +22,7 @@ func SendEmail(content string, receiverMail string, subject string) {
 	}
 }
 
-func GenerateEmail(customer models.Customer, payment models.Payment, scheduleTicket models.ScheduleTicket) string {
+func GeneratePaymentEmail(customer models.Customer, payment models.Payment, scheduleTicket models.ScheduleTicket) string {
 
 	content := `<!DOCTYPE html>
 	<html lang="en">
