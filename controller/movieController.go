@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,12 +22,27 @@ import (
 // @Produce json
 // @Success 200 {object} models.MoviesResponse
 // @Router /movies [get]
+
 func GetMovies(c *gin.Context) {
 	var movies []models.Movie
 
-	// showTime := c.Query("show_time")
-	// branch := c.Query("branch")
-	// rating := c.Query("rating")
+	// Menambahkan kondisi pencarian berdasarkan parameter show_time
+	// if showTime := c.Query("show_time"); showTime != "" {
+	// 	query += " AND show_time = ?"
+	// 	params = append(params, showTime)
+	// }
+
+	// // Menambahkan kondisi pencarian berdasarkan parameter branch
+	// if branch := c.Query("branch"); branch != "" {
+	// 	query += " AND branch = ?"
+	// 	params = append(params, branch)
+	// }
+
+	// // Menambahkan kondisi pencarian berdasarkan parameter rating
+	// if rating := c.Query("rating"); rating != "" {
+	// 	query += " AND rating = ?"
+	// 	params = append(params, rating)
+	// }
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
@@ -51,16 +67,34 @@ func GetMovies(c *gin.Context) {
 // @Success 200 {object} models.MoviesResponse
 // @Router /movies/search [get]
 func SearchMovies(c *gin.Context) {
-	// TODO: Implement logic to search movies by title and genre
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var movies []models.Movie
+	// title := c.Query("title")
+	// genre := c.Query("genre")
+	// if title != "" && genre != "" {
+	// 	models.DB.Where("title LIKE ? AND genre LIKE ?", "%"+title+"%", "%"+genre+"%").Find(&movies)
+	// } else if title != "" {
+	// 	models.DB.Where("title LIKE ?", "%"+title+"%").Find(&movies)
+	// } else if genre != "" {
+	// 	models.DB.Where("genre LIKE ?", "%"+genre+"%").Find(&movies)
+	// } else {
+	// 	c.JSON(http.StatusBadRequest, models.Response{
+	// 		Status:  http.StatusBadRequest,
+	// 		Message: "Please provide either title or genre to search for movies",
+	// 	})
+	// 	return
+	// }
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
-			Status:  200,
-			Message: "Searched movies retrieved successfully",
+			Status:  http.StatusOK,
+			Message: "Movies retrieved successfully",
 		},
 		Movies: movies,
 	}
+
 	c.JSON(http.StatusOK, responseData)
 }
 
@@ -74,9 +108,32 @@ func SearchMovies(c *gin.Context) {
 // @Success 200 {object} models.Movie
 // @Router /movies/{movie_id} [get]
 func GetMovieById(c *gin.Context) {
-	// movieId := c.Query("movieId")
-	var movie models.Movie
+	// Connect to database
+	db := config.ConnectDB()
 
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+	// movieId := c.Query("movieId")
+	movieId, err := strconv.Atoi(c.Param("movieId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
+	var movie models.Movie
+	err = db.QueryRow("Select title,description,duration,rating,release_date from movie where id =?", movieId).Scan(&movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the movie is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	responseData := models.MovieResponse{
 		Response: models.Response{
 			Status:  200,

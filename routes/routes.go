@@ -53,7 +53,8 @@ func SetupRouter() *gin.Engine {
 					movieId.PUT("/", controller.UpdateMovie)
 					movieId.DELETE("/", controller.DeleteMovie)
 					movieId.PUT("/schedules/:scheduleId", controller.UpdateMovieSchedule)
-					movieId.DELETE("/schedules//:scheduleId", controller.DeleteSchedule)
+					movieId.DELETE("/schedules/:scheduleId", controller.DeleteSchedule)
+					movieId.GET("/", controller.GetMovieById)
 				}
 			}
 
