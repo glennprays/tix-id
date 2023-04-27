@@ -56,6 +56,7 @@ func SetupRouter() *gin.Engine {
 			movie := v1.Group("/movies")
 			{
 				movie.GET("/", controller.GetMovies)
+				movie.GET("/search", controller.SearchMovies)
 				movie.POST("/", controller.CreateMovie)
 				movieId := movie.Group("/:movieId")
 				{

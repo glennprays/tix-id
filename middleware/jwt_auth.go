@@ -43,7 +43,7 @@ func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, err := c.Cookie(tokenName)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Access token is missing"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Access token is missing, please login first"})
 			return
 		}
 
