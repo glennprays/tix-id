@@ -21,41 +21,37 @@ import (
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/registration [post]
 func AddCustomer(c *gin.Context) {
-	// Connect to database
 	db := config.ConnectDB()
-
-	// Ensure the database connection is closed when the function returns
 	defer db.Close()
-	var customer models.Customer
-	if err := c.ShouldBindJSON(&customer); err != nil {
+
+	var login models.LoginRequest
+	if err := c.ShouldBindJSON(&login); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	result, err := db.Exec("INSERT INTO customer (username, password,name,email,phone) VALUES (?, ?,?,?,?)", customer.Username, customer.Password, customer.Name, customer.Email, customer.Phone)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+
+	row := db.QueryRow("select id, username, name, email, phone, nik from user where email = ? and password = ?",
+		login.Email,
+		login.Password)
+
+	var admin models.User
+	if err := row.Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Phone, &user.NIK); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
+	} else {
+		middleware.CreateToken(c, uint(user.ID), "user", 3600)
+
+		responseData := models.AdminResponse{
+			Response: models.Response{
+				Status:  200,
+				Message: "Login successful",
+			},
+			User: user ,
+		}
+
+		c.JSON(http.StatusCreated, responseData)
 	}
-
-	// Get the ID of the inserted customer
-	id, err := result.LastInsertId()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted branch"})
-		return
-	}
-
-	// Set the ID of the customer to the inserted ID
-	customer.ID = int(id)
-
-	responseData := models.CustomerResponse{
-		Response: models.Response{
-			Status:  200,
-			Message: "Registration successful",
-		},
-		Customer: customer,
-	}
-
-	c.JSON(http.StatusCreated, responseData)
 }
 
 // LoginCustomer godoc
