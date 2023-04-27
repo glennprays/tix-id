@@ -5,6 +5,7 @@ import (
 	"tix-id/controller"
 	"tix-id/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin" // swagger embed files
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -12,6 +13,13 @@ import (
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"https://ithb.ac.id"}
+	config.AllowMethods = []string{"GET"}
+	config.AllowHeaders = []string{"Origin"}
+	config.AllowCredentials = true
+	router.Use(cors.New(config))
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -48,6 +56,7 @@ func SetupRouter() *gin.Engine {
 			movie := v1.Group("/movies")
 			{
 				movie.GET("/", controller.GetMovies)
+				movie.GET("/search", controller.SearchMovies)
 				movie.POST("/", controller.CreateMovie)
 				movieId := movie.Group("/:movieId")
 				{

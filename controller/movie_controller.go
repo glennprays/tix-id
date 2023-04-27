@@ -131,25 +131,39 @@ func GetMovies(c *gin.Context) {
 // @Success 200 {object} models.MoviesResponse
 // @Router /movies/search [get]
 func SearchMovies(c *gin.Context) {
+
 	db := config.ConnectDB()
 	defer db.Close()
+	params := []interface{}{}
 
+	query := "SELECT id, title, description, duration, rating, release_date FROM movie where 1 = 1"
+	if title := c.Query("title"); title != "" {
+		query += " AND title like ?"
+		params = append(params, "%"+title+"%")
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no title at params!"})
+		return
+	}
+
+	// Execute a SELECT query to retrieve all movies from the database
+	rows, err := db.Query(query, params...)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve movies from database"})
+		return
+	}
+
+	// Iterate over the rows returned from the query and store them in a slice of movie structs
 	var movies []models.Movie
-	// title := c.Query("title")
-	// genre := c.Query("genre")
-	// if title != "" && genre != "" {
-	// 	models.DB.Where("title LIKE ? AND genre LIKE ?", "%"+title+"%", "%"+genre+"%").Find(&movies)
-	// } else if title != "" {
-	// 	models.DB.Where("title LIKE ?", "%"+title+"%").Find(&movies)
-	// } else if genre != "" {
-	// 	models.DB.Where("genre LIKE ?", "%"+genre+"%").Find(&movies)
-	// } else {
-	// 	c.JSON(http.StatusBadRequest, models.Response{
-	// 		Status:  http.StatusBadRequest,
-	// 		Message: "Please provide either title or genre to search for movies",
-	// 	})
-	// 	return
-	// }
+	for rows.Next() {
+		var movie models.Movie
+		err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve movie from database"})
+			return
+		}
+		movies = append(movies, movie)
+
+	}
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
