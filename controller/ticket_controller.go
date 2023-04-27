@@ -230,7 +230,6 @@ func CreateTicket(c *gin.Context) {
 	}
 
 	// create new ticket
-
 	res, errQuery = db.Exec("insert into ticket(customer_id, schedule_id, seat_id, payment_id) values (?,?,?,?)",
 		customerId,
 		schedule.ID,
@@ -243,6 +242,7 @@ func CreateTicket(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	schedule.Seat = nil
 	var ticket models.Ticket
 	ticket.ID = int(lastInsertID)
