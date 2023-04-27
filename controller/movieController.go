@@ -2,11 +2,15 @@ package controller
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 	"tix-id/config"
 	"tix-id/models"
+	"tix-id/tool"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,46 +33,70 @@ func GetMovies(c *gin.Context) {
 
 	var movies []models.Movie
 	params := []interface{}{}
+	redisKey := "movies"
+	redisClient := tool.NewRedisClient()
 
 	query := "select m.id, m.title, m.description, m.duration, m.rating, m.release_date from movie m where 1 = 1"
 	// check if there is params show_time
 	if showTime := c.Query("show_time"); showTime != "" {
+		redisKey += showTime + ":"
 		query += " AND DATE(m.show_time) = ?"
 		params = append(params, showTime)
 	}
 
 	// // check if there is params rating
 	if rating := c.Query("rating"); rating != "" {
+		redisKey += rating + ":"
 		query += " AND m.rating > ?"
 		params = append(params, rating)
 	}
 
-	rows, err := db.Query(query, params...)
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-		return
-	}
-
-	noData := true
-	for rows.Next() {
-		noData = false
-		var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate); err != nil {
+	moviesCache, err := tool.GetRedisValue(redisClient, redisKey)
+	if err == nil {
+		fmt.Println("Mengambil data dari redis")
+		err := json.Unmarshal([]byte(moviesCache), &movies)
+		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unmarshal cached data"})
 			return
 		}
-		movies = append(movies, movie)
-	}
+	} else {
 
-	if noData {
-		response := models.Response{
-			Status:  404,
-			Message: "No movie found!",
+		rows, err := db.Query(query, params...)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+			return
 		}
-		c.JSON(http.StatusNotFound, response)
-		return
+
+		noData := true
+		for rows.Next() {
+			noData = false
+			var movie models.Movie
+			if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate); err != nil {
+				log.Println(err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			movies = append(movies, movie)
+		}
+
+		if noData {
+			response := models.Response{
+				Status:  404,
+				Message: "No movie found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+
+		moviesJSON, err := json.Marshal(movies)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal movie data"})
+			return
+		}
+		err = tool.SetRedisValue(redisClient, redisKey, string(moviesJSON), 10*time.Second)
 	}
 
 	responseData := models.MoviesResponse{
