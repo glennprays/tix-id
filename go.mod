@@ -3,6 +3,7 @@ module tix-id
 go 1.20
 
 require (
+	github.com/claudiu/gocron v0.0.0-20151103142354-980c96bf412b
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-sql-driver/mysql v1.7.0
