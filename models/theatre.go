@@ -1,7 +1,7 @@
 package models
 
 type Theatre struct {
-	ID   *int   `json:"id,omitempty"`
+	ID   int    `json:"id,omitempty"`
 	Name string `json:"name"`
 }
 
