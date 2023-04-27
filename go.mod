@@ -17,8 +17,11 @@ require (
 require gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 
 require (
+	github.com/gin-contrib/cors v1.4.0 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.18.1 // indirect
+	github.com/rogpeppe/go-internal v1.8.0 // indirect
 )
 
 require (
