@@ -24,7 +24,7 @@ func SetupRouter() *gin.Engine {
 		{
 			v1.DELETE("/auth/logout", middleware.AuthMiddleware("admin", "customer"), controller.LogoutAccount)
 			customer := v1.Group("/customer")
-
+			customer.Use(middleware.AuthMiddleware("customer"))
 			{
 				customer.POST("/registration", controller.AddCustomer)
 				customer.POST("/auth/login", controller.LoginCustomer)
