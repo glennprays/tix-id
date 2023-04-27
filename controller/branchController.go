@@ -204,10 +204,52 @@ func GetBranch(c *gin.Context) {
 // @Success 204 {object} models.Response
 // @Router /branches/{branchId} [delete]
 func DeleteBranch(c *gin.Context) {
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
 	// branchId := c.Query("branchId")
+	branchId, err := strconv.Atoi(c.Param("branchId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
+
+	// Check if the branch exists
+	var count int
+	errs := db.QueryRow("SELECT COUNT(*) FROM branch WHERE id=?", branchId).Scan(&count)
+	if errs != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if count == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+		return
+	}
+
+	// Delete the branch
+	result, err := db.Exec("DELETE FROM branch WHERE id=?", branchId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete branch"})
+		return
+	}
+	message := fmt.Sprintf("Branch with id %d was deleted successfully", branchId)
 	responseData := models.Response{
 		Status:  200,
-		Message: "Movie deleted successfully",
+		Message: message,
 	}
 	c.JSON(http.StatusOK, responseData)
 }

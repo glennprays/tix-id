@@ -70,6 +70,7 @@ func SetupRouter() *gin.Engine {
 				{
 					branchId.GET("/branch", controller.GetBranch)
 					branchId.PUT("/", controller.UpdateBranch)
+					branchId.DELETE("/", controller.DeleteBranch)
 				}
 			}
 
