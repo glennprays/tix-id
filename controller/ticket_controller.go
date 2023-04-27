@@ -458,6 +458,22 @@ func ConfirmPayment(c *gin.Context) {
 	schedule.Movie = &movie
 	ticket.Schedule = schedule
 
+	var customer models.Customer
+	// Check if schedule exists in database
+	if err := db.QueryRow("SELECT name, email FROM customer WHERE id = ?", customerIdParam).Scan(
+		&customer.Name,
+		&customer.Email,
+	); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
+		return
+	}
+	log.Println(ticket.Seat.Number)
+	schedule.Seat = &models.Seat{}
+	schedule.Seat.Number = ticket.Seat.Number
+	schedule.Seat.Number = ticket.Seat.Row
+	content := GenerateEmail(customer, payment, schedule)
+	SendEmail(content, customer.Email)
+
 	responseData := models.TicketResponse{
 		Response: models.Response{
 			Status:  200,
