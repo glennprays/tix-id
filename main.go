@@ -27,7 +27,7 @@ func main() {
 	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	cronTicketExpiry()
+	go cronTicketExpiry()
 
 	r := routes.SetupRouter()
 	r.Run(":8080")
@@ -42,7 +42,7 @@ func cronTicketExpiry() {
 
 	// Ensure the database connection is closed when the function returns
 	defer db.Close()
-	s.Every(1).Second().Do(func() {
+	s.Every(10).Seconds().Do(func() {
 		//get all payments
 		rows, err := db.Query("SELECT * FROM payment")
 		if err != nil {
