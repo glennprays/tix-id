@@ -23,25 +23,52 @@ import (
 // @Router /movies [get]
 
 func GetMovies(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var movies []models.Movie
+	params := []interface{}{}
 
-	// Menambahkan kondisi pencarian berdasarkan parameter show_time
-	// if showTime := c.Query("show_time"); showTime != "" {
-	// 	query += " AND show_time = ?"
-	// 	params = append(params, showTime)
-	// }
+	query := "select m.id, m.title, m.description, m.duration, m.rating, m.release_date from movie m where 1 = 1"
+	// check if there is params show_time
+	if showTime := c.Query("show_time"); showTime != "" {
+		query += " AND DATE(m.show_time) = ?"
+		params = append(params, showTime)
+	}
 
-	// // Menambahkan kondisi pencarian berdasarkan parameter branch
-	// if branch := c.Query("branch"); branch != "" {
-	// 	query += " AND branch = ?"
-	// 	params = append(params, branch)
-	// }
+	// // check if there is params rating
+	if rating := c.Query("rating"); rating != "" {
+		query += " AND m.rating > ?"
+		params = append(params, rating)
+	}
 
-	// // Menambahkan kondisi pencarian berdasarkan parameter rating
-	// if rating := c.Query("rating"); rating != "" {
-	// 	query += " AND rating = ?"
-	// 	params = append(params, rating)
-	// }
+	rows, err := db.Query(query, params...)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
+
+	noData := true
+	for rows.Next() {
+		noData = false
+		var movie models.Movie
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		movies = append(movies, movie)
+	}
+
+	if noData {
+		response := models.Response{
+			Status:  404,
+			Message: "No movie found!",
+		}
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
