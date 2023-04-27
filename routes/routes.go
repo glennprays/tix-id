@@ -57,6 +57,7 @@ func SetupRouter() *gin.Engine {
 			branches := v1.Group("/branches")
 			{
 				branches.GET("/", controller.GetBranches)
+				branches.POST("/", controller.CreateBranch)
 				branchId := branches.Group("/:branchId")
 				{
 					branchId.GET("/branch", controller.GetBranch)
