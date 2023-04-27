@@ -27,6 +27,28 @@ func CreateBranch(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+
+	// Insert the movie into the database
+	result, err := db.Exec("INSERT INTO branch (name, address) VALUES (?, ?)", branch.Name, branch.Address)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
+	// Get the ID of the inserted branch
+	id, err := result.LastInsertId()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted branch"})
+		return
+	}
+
+	// Set the ID of the movie to the inserted ID
+	branch.ID = int(id)
 
 	responseData := models.BranchResponse{
 		Response: models.Response{
