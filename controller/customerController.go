@@ -1,7 +1,12 @@
 package controller
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
+	"strconv"
+	"tix-id/config"
+	"tix-id/middleware"
 	"tix-id/models"
 
 	"github.com/gin-gonic/gin"
@@ -17,21 +22,7 @@ import (
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/registration [post]
 func AddCustomer(c *gin.Context) {
-	var customer models.Customer
-	if err := c.ShouldBindJSON(&customer); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
-	responseData := models.CustomerResponse{
-		Response: models.Response{
-			Status:  200,
-			Message: "Registration successful",
-		},
-		Customer: customer,
-	}
-
-	c.JSON(http.StatusCreated, responseData)
 }
 
 // LoginCustomer godoc
@@ -44,41 +35,37 @@ func AddCustomer(c *gin.Context) {
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/auth/login [post]
 func LoginCustomer(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var login models.LoginRequest
 	if err := c.ShouldBindJSON(&login); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	row := db.QueryRow("select id, username, password, name, email, phone from customer where email = ? and password = ?",
+		login.Email,
+		login.Password)
+
 	var customer models.Customer
-	// Check if customer exists and password is correct
-	// customer, err := models.GetCustomerByEmail(login.Email)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
-	// 	return
-	// }
-	// if !models.VerifyPassword(customer.Password, login.Password) {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
-	// 	return
-	// }
+	if err := row.Scan(&customer.ID, &customer.Username, &customer.Password, &customer.Name, &customer.Email, &customer.Phone); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	} else {
+		middleware.CreateToken(c, uint(customer.ID), "customer", 3600)
 
-	// Generate JWT token
-	// token, err := models.GenerateToken(customer.ID)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-	// 	return
-	// }
+		responseData := models.CustomerResponse{
+			Response: models.Response{
+				Status:  200,
+				Message: "Login successful",
+			},
+			Customer: customer,
+		}
 
-	responseData := models.CustomerResponse{
-		Response: models.Response{
-			Status:  200,
-			Message: "Login successful",
-		},
-		Customer: customer,
-		// Token:    token,
+		c.JSON(http.StatusCreated, responseData)
 	}
-
-	c.JSON(http.StatusCreated, responseData)
 }
 
 // GetCustomer godoc
@@ -91,10 +78,34 @@ func LoginCustomer(c *gin.Context) {
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/{customerId}/profile [get]
 func GetCustomer(c *gin.Context) {
+	// Connect to database
+	db := config.ConnectDB()
 
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
 	// customerId := c.Param("customerId")
-
+	customerId, err := strconv.Atoi(c.Param("customerId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve customer from database"})
+		return
+	}
 	var customer models.Customer
+	err = db.QueryRow("Select username,name,email,phone from customer where id =?", customerId).Scan(&customer.Username, &customer.Name, &customer.Email, &customer.Phone)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the branch is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	customer.ID = customerId
+
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
@@ -117,9 +128,41 @@ func GetCustomer(c *gin.Context) {
 // @Success 200 {object} models.CustomerResponse
 // @Router /customer/{customerId}/profile [put]
 func UpdateCustomer(c *gin.Context) {
-	// customerId := c.Param("customerId")
+	// Connect to database
+	db := config.ConnectDB()
 
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+	// customerId := c.Param("customerId")
 	var customer models.Customer
+	if err := c.ShouldBindJSON(&customer); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	customerId, err := strconv.Atoi(c.Param("customerId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve customer from database"})
+		return
+	}
+
+	result, err := db.Exec("UPDATE customer SET username=?,password=?,name=?,email=?,phone=? WHERE id=?", customer.Username, customer.Password, customer.Name, customer.Email, customer.Phone, customerId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		return
+	}
+	customer.ID = customerId
+
 	responseData := models.CustomerResponse{
 		Response: models.Response{
 			Status:  200,
