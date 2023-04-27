@@ -1,8 +1,6 @@
-package controller
+package tool
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"tix-id/models"
@@ -10,26 +8,21 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func SendEmail(content string, receiverMail string) {
+func SendEmail(content string, receiverMail string, subject string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "No Reply <no-reply@example.com>")
 	m.SetHeader("To", receiverMail)
-	m.SetHeader("Subject", "Hello!")
+	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", content)
-	email := os.Getenv("EMAIL")
-	password := os.Getenv("PASSWORD")
-	fmt.Println(email, " ", password)
-	d := gomail.NewDialer("smtp.gmail.com", 465, "if-21056@students.ithb.ac.id", "factcheck")
+	mailPort, _ := strconv.Atoi(os.Getenv("MAIL_PORT"))
+	d := gomail.NewDialer(os.Getenv("MAIL_HOST"), mailPort, os.Getenv("MAIL_SENDER"), os.Getenv("MAIL_PASSWORD"))
 
-	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
 		panic(err)
 	}
-	log.Println("in here")
-	log.Println(content)
 }
 
-func GenerateEmail(customer models.Customer, payment models.Payment, scheduleTicket models.ScheduleTicket) string {
+func GeneratePaymentEmail(customer models.Customer, payment models.Payment, scheduleTicket models.ScheduleTicket) string {
 
 	content := `<!DOCTYPE html>
 	<html lang="en">
@@ -116,9 +109,9 @@ func GenerateEmail(customer models.Customer, payment models.Payment, scheduleTic
 				<li><strong>SEAT       ` + scheduleTicket.Seat.Row + scheduleTicket.Seat.Number + `</li>
 				<li><strong>COST       ` + strconv.Itoa(int(payment.Amount)) + `</li>
 				<li><strong>Paid with X-Pay</li></ul>
-						<p>Sold by PT BadBums Programmers (NPWP: 02.331.777-9.054.000 - Address: Gedung AIA Central Lt. 26, Jl. Jend. Sudirman Kav. 48A, Setiabudi, Jakarta Selatan, DKI Jakarta. Admin Fee and Discount, if any, are provided by ANONYMOUS.</p>
+						<p>Sold by PT Tiket Indonesia Programmers (NPWP: 02.331.777-9.054.000 - Address: Gedun ITHB Lt. 2, Jl. Dipatiukur No. 80 - 84, Bandung, Jawa Barat. Admin Fee and Discount, if any, are provided by ANONYMOUS.</p>
 						<div class="email-footer">
-							<p>Need help? Contact at: whatever@gpt.com</p>
+							<p>Need help? Contact at: payment@tix-id.com</p>
 						</div>
 					</div>
 				</body>

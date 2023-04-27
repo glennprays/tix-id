@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"strconv"
 	"tix-id/config"
+	"tix-id/middleware"
 	"tix-id/models"
+	"tix-id/tool"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,18 +27,18 @@ func GetTickets(c *gin.Context) {
 	defer db.Close()
 	// TODO:get by customer id and verify with id in cookies
 	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
-	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
-	// if customerIdParam != int(customerId) {
-	// 	response := models.Response{
-	// 		Status:  200,
-	// 		Message: "The user id didn't matched",
-	// 	}
-	// 	c.JSON(http.StatusOK, response)
-	// 	return
-	// }
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
 	// dummy data
-	customerId := customerIdParam
+	// customerId := customerIdParam
 
 	query := "select count(*) from ticket where customer_id = ?"
 	var count int
@@ -467,12 +469,11 @@ func ConfirmPayment(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
 		return
 	}
-	log.Println(ticket.Seat.Number)
 	schedule.Seat = &models.Seat{}
 	schedule.Seat.Number = ticket.Seat.Number
 	schedule.Seat.Number = ticket.Seat.Row
-	content := GenerateEmail(customer, payment, schedule)
-	SendEmail(content, customer.Email)
+	content := tool.GeneratePaymentEmail(customer, payment, schedule)
+	go tool.SendEmail(content, customer.Email, "[TIX-ID] Payment Successful")
 
 	responseData := models.TicketResponse{
 		Response: models.Response{
