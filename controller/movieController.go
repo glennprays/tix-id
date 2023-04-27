@@ -26,22 +26,22 @@ func GetMovies(c *gin.Context) {
 	var movies []models.Movie
 
 	// Menambahkan kondisi pencarian berdasarkan parameter show_time
-	if showTime := c.Query("show_time"); showTime != "" {
-		query += " AND show_time = ?"
-		params = append(params, showTime)
-	}
+	// if showTime := c.Query("show_time"); showTime != "" {
+	// 	query += " AND show_time = ?"
+	// 	params = append(params, showTime)
+	// }
 
-	// Menambahkan kondisi pencarian berdasarkan parameter branch
-	if branch := c.Query("branch"); branch != "" {
-		query += " AND branch = ?"
-		params = append(params, branch)
-	}
+	// // Menambahkan kondisi pencarian berdasarkan parameter branch
+	// if branch := c.Query("branch"); branch != "" {
+	// 	query += " AND branch = ?"
+	// 	params = append(params, branch)
+	// }
 
-	// Menambahkan kondisi pencarian berdasarkan parameter rating
-	if rating := c.Query("rating"); rating != "" {
-		query += " AND rating = ?"
-		params = append(params, rating)
-	}
+	// // Menambahkan kondisi pencarian berdasarkan parameter rating
+	// if rating := c.Query("rating"); rating != "" {
+	// 	query += " AND rating = ?"
+	// 	params = append(params, rating)
+	// }
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
@@ -66,22 +66,25 @@ func GetMovies(c *gin.Context) {
 // @Success 200 {object} models.MoviesResponse
 // @Router /movies/search [get]
 func SearchMovies(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var movies []models.Movie
-	title := c.Query("title")
-	genre := c.Query("genre")
-	if title != "" && genre != "" {
-		models.DB.Where("title LIKE ? AND genre LIKE ?", "%"+title+"%", "%"+genre+"%").Find(&movies)
-	} else if title != "" {
-		models.DB.Where("title LIKE ?", "%"+title+"%").Find(&movies)
-	} else if genre != "" {
-		models.DB.Where("genre LIKE ?", "%"+genre+"%").Find(&movies)
-	} else {
-		c.JSON(http.StatusBadRequest, models.Response{
-			Status:  http.StatusBadRequest,
-			Message: "Please provide either title or genre to search for movies",
-		})
-		return
-	}
+	// title := c.Query("title")
+	// genre := c.Query("genre")
+	// if title != "" && genre != "" {
+	// 	models.DB.Where("title LIKE ? AND genre LIKE ?", "%"+title+"%", "%"+genre+"%").Find(&movies)
+	// } else if title != "" {
+	// 	models.DB.Where("title LIKE ?", "%"+title+"%").Find(&movies)
+	// } else if genre != "" {
+	// 	models.DB.Where("genre LIKE ?", "%"+genre+"%").Find(&movies)
+	// } else {
+	// 	c.JSON(http.StatusBadRequest, models.Response{
+	// 		Status:  http.StatusBadRequest,
+	// 		Message: "Please provide either title or genre to search for movies",
+	// 	})
+	// 	return
+	// }
 
 	responseData := models.MoviesResponse{
 		Response: models.Response{
