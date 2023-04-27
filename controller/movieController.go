@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -107,9 +108,32 @@ func SearchMovies(c *gin.Context) {
 // @Success 200 {object} models.Movie
 // @Router /movies/{movie_id} [get]
 func GetMovieById(c *gin.Context) {
-	// movieId := c.Query("movieId")
-	var movie models.Movie
+	// Connect to database
+	db := config.ConnectDB()
 
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+	// movieId := c.Query("movieId")
+	movieId, err := strconv.Atoi(c.Param("movieId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
+	var movie models.Movie
+	err = db.QueryRow("Select title,description,duration,rating,release_date from movie where id =?", movieId).Scan(&movie.Title, &movie.Description, &movie.Duration, &movie.Rating, &movie.ReleaseDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response := models.Response{
+				Status:  404,
+				Message: "the movie is not found!",
+			}
+			c.JSON(http.StatusNotFound, response)
+			return
+		}
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	responseData := models.MovieResponse{
 		Response: models.Response{
 			Status:  200,
