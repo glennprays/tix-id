@@ -176,10 +176,10 @@ func SearchMovies(c *gin.Context) {
 		}
 
 		// Add the retrieved theatres to the current branch
-		branch.Theatres = &theatres
+		movie.Theatres = &theatres
 
 		// Add the current branch to the branches slice
-		branches = append(branches, branch)
+		movies = append(branches, movie)
 	
 
 	// }
