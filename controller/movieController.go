@@ -36,11 +36,11 @@ func GetMovies(c *gin.Context) {
 	redisKey := "movies"
 	redisClient := tool.NewRedisClient()
 
-	query := "select m.id, m.title, m.description, m.duration, m.rating, m.release_date from movie m where 1 = 1"
+	query := "select m.id, m.title, m.description, m.duration, m.rating, m.release_date from movie m join schedule sc on m.id = sc.movie_id join theatre t on sc.theatre_id = t.id join branch b on t.branch_id = b.id where 1 = 1"
 	// check if there is params show_time
 	if showTime := c.Query("show_time"); showTime != "" {
 		redisKey += showTime + ":"
-		query += " AND DATE(m.show_time) = ?"
+		query += " AND DATE(sc.show_time) = ?"
 		params = append(params, showTime)
 	}
 
@@ -50,6 +50,15 @@ func GetMovies(c *gin.Context) {
 		query += " AND m.rating > ?"
 		params = append(params, rating)
 	}
+
+	// // check if there is params branch
+	if branch := c.Query("branch"); branch != "" {
+		redisKey += branch + ":"
+		query += " AND b.name like ?"
+		params = append(params, "%"+branch+"%")
+	}
+
+	query += " ORDER BY m.release_date DESC"
 
 	moviesCache, err := tool.GetRedisValue(redisClient, redisKey)
 	if err == nil {
