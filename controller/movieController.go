@@ -24,36 +24,54 @@ import (
 // @Router /movies [get]
 
 func GetMovies(c *gin.Context) {
-	var movies []models.Movie
+	db := config.ConnectDB()
 
-	// Menambahkan kondisi pencarian berdasarkan parameter show_time
-	// if showTime := c.Query("show_time"); showTime != "" {
-	// 	query += " AND show_time = ?"
-	// 	params = append(params, showTime)
-	// }
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
 
-	// // Menambahkan kondisi pencarian berdasarkan parameter branch
-	// if branch := c.Query("branch"); branch != "" {
-	// 	query += " AND branch = ?"
-	// 	params = append(params, branch)
-	// }
-
-	// // Menambahkan kondisi pencarian berdasarkan parameter rating
-	// if rating := c.Query("rating"); rating != "" {
-	// 	query += " AND rating = ?"
-	// 	params = append(params, rating)
-	// }
-
-	responseData := models.MoviesResponse{
-		Response: models.Response{
-			Status:  200,
-			Message: "Movies retrieved successfully",
-		},
-		Movies: movies,
+	// Execute a SELECT query to retrieve all movies from the database
+	rows, err := db.Query("SELECT * FROM Movies")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
 	}
 
-	// Send response
-	c.JSON(http.StatusOK, responseData)
+	// Iterate over the rows returned from the query and store them in a slice of Movies structs
+	var movies []models.Movies
+	for rows.Next() {
+		var branch models.Branch
+		err := rows.Scan(&branch.ID, &branch.Name, &branch.Address)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+			return
+		}
+
+		// Execute a SELECT query to retrieve all theatres for the current movie
+		theatreRows, err := db.Query("SELECT id, name FROM theatre WHERE movie_id = ?", movie.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error1": err})
+			return
+		}
+
+		// Create an empty slice of Theatre structs to hold the retrieved theatres
+		var theatres []models.Theatre
+
+		// Iterate over the theatre rows returned from the query and store them in the theatres slice
+		for theatreRows.Next() {
+			var theatre models.Theatre
+			err := theatreRows.Scan(&theatre.ID, &theatre.Name)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error2": fmt.Sprintf("%v", err)})
+				return
+			}
+			theatres = append(theatres, theatre)
+		}
+
+		// Add the retrieved theatres to the current branch
+		branch.Theatres = &theatres
+
+		// Add the current branch to the branches slice
+		branches = append(branches, branch)
 }
 
 // SearchMovies godoc
