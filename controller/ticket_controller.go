@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"strconv"
 	"tix-id/config"
+	"tix-id/middleware"
 	"tix-id/models"
+	"tix-id/tool"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,18 +27,18 @@ func GetTickets(c *gin.Context) {
 	defer db.Close()
 	// TODO:get by customer id and verify with id in cookies
 	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
-	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
-	// if customerIdParam != int(customerId) {
-	// 	response := models.Response{
-	// 		Status:  200,
-	// 		Message: "The user id didn't matched",
-	// 	}
-	// 	c.JSON(http.StatusOK, response)
-	// 	return
-	// }
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
 	// dummy data
-	customerId := customerIdParam
+	// customerId := customerIdParam
 
 	query := "select count(*) from ticket where customer_id = ?"
 	var count int
@@ -230,7 +232,6 @@ func CreateTicket(c *gin.Context) {
 	}
 
 	// create new ticket
-
 	res, errQuery = db.Exec("insert into ticket(customer_id, schedule_id, seat_id, payment_id) values (?,?,?,?)",
 		customerId,
 		schedule.ID,
@@ -243,6 +244,7 @@ func CreateTicket(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	schedule.Seat = nil
 	var ticket models.Ticket
 	ticket.ID = int(lastInsertID)
@@ -457,6 +459,21 @@ func ConfirmPayment(c *gin.Context) {
 	schedule.Branch = &branch
 	schedule.Movie = &movie
 	ticket.Schedule = schedule
+
+	var customer models.Customer
+	// Check if schedule exists in database
+	if err := db.QueryRow("SELECT name, email FROM customer WHERE id = ?", customerIdParam).Scan(
+		&customer.Name,
+		&customer.Email,
+	); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
+		return
+	}
+	schedule.Seat = &models.Seat{}
+	schedule.Seat.Number = ticket.Seat.Number
+	schedule.Seat.Number = ticket.Seat.Row
+	content := tool.GeneratePaymentEmail(customer, payment, schedule)
+	go tool.SendEmail(content, customer.Email, "[TIX-ID] Payment Successful")
 
 	responseData := models.TicketResponse{
 		Response: models.Response{
