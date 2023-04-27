@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 	"tix-id/config"
@@ -28,9 +27,7 @@ func main() {
 	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	fmt.Println("in here a")
 	cronTicketExpiry()
-	fmt.Println("in here b")
 
 	r := routes.SetupRouter()
 	r.Run(":8080")
@@ -66,12 +63,7 @@ func cronTicketExpiry() {
 			//if status pending after 5 mins, change to expired
 			t1 := created_at
 			t2 := time.Now()
-			fmt.Println("paymentId: ", payment.ID)
-			fmt.Println("t1: ", t1)
-			fmt.Println("t2: ", t2)
-			fmt.Println("t2.Sub(t1).Minutes(): ", t2.Sub(t1).Minutes())
 			if (payment.Status == "pending") && (t2.Sub(t1).Minutes() >= 1) {
-				fmt.Println("i am changed")
 				_, err := db.Exec("UPDATE payment SET payment_status = 'failed' WHERE id = ?", payment.ID)
 				if err != nil {
 					log.Println(err)
