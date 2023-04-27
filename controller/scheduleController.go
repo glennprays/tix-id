@@ -212,12 +212,55 @@ func GetSchedule(c *gin.Context) {
 // @Success 201 {object} models.ScheduleResponse
 // @Router /movies/{movieId}/schedules [post]
 func CreateMovieSchedule(c *gin.Context) {
-	// movieId := c.Query("movieId")
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+
 	var schedule models.Schedule
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	movieId, err := strconv.Atoi(c.Param("movieId"))
+	log.Println("movieid: ", movieId)
+
+	// Check if movie exists in database
+	if schedule.Movie != nil {
+		var movie models.Movie
+		if err := db.QueryRow("SELECT id FROM movie WHERE id = ?", movieId).Scan(&movie.ID); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Movie not found"})
+			return
+		}
+	}
+	// Check if branch exists in database
+	if schedule.Branch.ID != nil {
+		var branch models.BranchTheatre
+		if err := db.QueryRow("SELECT id FROM branch WHERE id = ?", schedule.Branch.ID).Scan(&branch.ID); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+			return
+		}
+	}
+	log.Println("A: ", schedule.Price)
+	log.Println(" B: ", schedule.Showtime)
+	log.Println(" D: ", schedule.Branch.ID)
+	// Insert schedule into database
+	result, err := db.Exec("INSERT INTO schedule (price, show_time, movie_id, theatre_id) VALUES (?, ?, ?, ?)",
+		schedule.Price, schedule.Showtime, movieId, schedule.Branch.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get the ID of the inserted schedule
+	scheduleID, err := result.LastInsertId()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	schedule.ID = int(scheduleID)
 
 	responseData := models.ScheduleResponse{
 		Response: models.Response{
