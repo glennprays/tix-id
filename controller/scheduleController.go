@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 	"tix-id/config"
 	"tix-id/models"
 
@@ -374,10 +375,47 @@ func UpdateMovieSchedule(c *gin.Context) {
 // @Success 204 {object} models.Response
 // @Router /movies/{movieId}/schedule/{scheduleId} [delete]
 func DeleteSchedule(c *gin.Context) {
-	// movieId := c.Query("movieId")
-	// scheduleId := c.Query("scheduleId")
+	scheduleID, err := strconv.Atoi(c.Param("scheduleId"))
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+
+	var count int
+	var date time.Time
+	err = db.QueryRow("select count(*) from ticket where schedule_id = ?", scheduleID).Scan(&count)
+	if count != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Schedule already has tickets, it cannot be changed"})
+		err = db.QueryRow("select show_time from schedule where schedule_id = ?", scheduleID).Scan(&date)
+		today := time.Now()
+		older := today.After(date)
+		if !older {
+			return
+		}
+	}
+
+	log.Println("scheduleId: ", scheduleID)
+
+	// Delete the movie
+	result, err := db.Exec("DELETE FROM schedule WHERE id=?", scheduleID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete movie"})
+		return
+	}
+
 	responseData := models.Response{
-		Status:  200,
+		Status:  http.StatusOK,
 		Message: "Schedule deleted successfully",
 	}
 	c.JSON(http.StatusOK, responseData)
