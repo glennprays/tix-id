@@ -43,8 +43,6 @@ func GetMovies(c *gin.Context) {
 		params = append(params, rating)
 	}
 
-
-
 	responseData := models.MoviesResponse{
 		Response: models.Response{
 			Status:  200,
@@ -96,7 +94,6 @@ func SearchMovies(c *gin.Context) {
 	c.JSON(http.StatusOK, responseData)
 }
 
-
 // GetMovieById godoc
 // @Summary Get a movie by ID
 // @Description Get a movie by ID
@@ -116,7 +113,7 @@ func GetMovieById(c *gin.Context) {
 			Message: "Movie retrieved successfully",
 		},
 		Movie: movie,
-	} 
+	}
 	c.JSON(http.StatusOK, responseData)
 }
 
