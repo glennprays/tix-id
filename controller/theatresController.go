@@ -68,20 +68,57 @@ func CreateTheatre(c *gin.Context) {
 // @Success 200 {object} models.BranchResponse
 // @Router /branches/{branchId}/theatres/{theatreId} [put]
 func UpdateTheatre(c *gin.Context) {
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
 	// branchId := c.Query("branchId")
+	branchId, err := strconv.Atoi(c.Param("branchId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
 	// theatreId := c.Query("theatreId")
+	theatreId, err := strconv.Atoi(c.Param("theatreId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
 	var theatre models.Theatre
 	if err := c.ShouldBindJSON(&theatre); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	var branch models.Branch
-	responseData := models.BranchResponse{
+	//theatre id
+	theatre.ID = theatreId
+	//branch id
+	branch.ID = branchId
+
+	result, err := db.Exec("UPDATE theatre SET name=? WHERE id=? && branch_id=?", theatre.Name, theatre.ID, branch.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+		return
+	}
+
+	responseData := models.TheatreResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Theatre updated successfully",
 		},
-		Branch: branch,
+		Theatre: theatre,
 	}
 	c.JSON(http.StatusOK, responseData)
 }
