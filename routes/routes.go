@@ -69,6 +69,7 @@ func SetupRouter() *gin.Engine {
 				branchId := branches.Group("/:branchId")
 				{
 					branchId.GET("/branch", controller.GetBranch)
+					branchId.PUT("/", controller.UpdateBranch)
 				}
 			}
 
