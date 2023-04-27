@@ -73,6 +73,7 @@ func SetupRouter() *gin.Engine {
 					branchId.DELETE("/", controller.DeleteBranch)
 					branchId.POST("/theatres", controller.CreateTheatre)
 					branchId.PUT("/theatres/:theatreId", controller.UpdateTheatre)
+					branchId.DELETE("/theatres/:theatreId", controller.DeleteTheatre)
 				}
 			}
 
