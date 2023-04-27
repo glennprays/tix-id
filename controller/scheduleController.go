@@ -2,6 +2,7 @@ package controller
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -282,15 +283,83 @@ func CreateMovieSchedule(c *gin.Context) {
 // @Success 204 {object} models.ScheduleResponse
 // @Router /movies/{movieId}/schedule/{scheduleId} [put]
 func UpdateMovieSchedule(c *gin.Context) {
-	// movieId := c.Query("movieId")
-	// scheduleId := c.Query("scheduleId")
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
+
+	movieId, err := strconv.Atoi(c.Param("movieId"))
 	var schedule models.Schedule
+	schedule.Branch = models.BranchTheatre{}
+	schedule.Movie = &models.Movie{}
+	schedule.Movie.ID = movieId
+	schedule.Branch.Theatre = models.Theatre{}
+
+	if err := c.ShouldBindJSON(&schedule); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	log.Println("schedule.Branch.Theatre.ID: ", schedule.Branch.Theatre.ID)
+	scheduleID, err := strconv.Atoi(c.Param("scheduleId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid schedule ID"})
+		return
+	}
+	fmt.Println("theatre checkpoint 1: ", schedule.Branch.Theatre.ID)
+	var count int
+	err = db.QueryRow("select count(*) from ticket where schedule_id = ?", scheduleID).Scan(&count)
+	if count != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Schedule already has tickets, it cannot be changed"})
+		return
+	}
+	var schedulee models.Schedule
+
+	// Check if schedule exists in database
+	if err := db.QueryRow("SELECT id, price, show_time, theatre_id FROM schedule WHERE id = ?", scheduleID).Scan(
+		&schedulee.ID,
+		&schedulee.Price,
+		&schedulee.Showtime,
+		&schedulee.Branch.ID,
+	); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
+		return
+	}
+
+	// Update schedule in database
+	log.Println("schedule.Price: ", schedule.Price)
+	log.Println("schedule.Showtime: ", schedule.Showtime)
+	log.Println("schedule.Movie.ID: ", schedule.Movie.ID)
+	log.Println("scheduleID: ", scheduleID)
+	log.Println("schedule.Branch.Theatre.ID: ", schedule.Branch.Theatre.ID)
+
+	_, err = db.Exec("UPDATE schedule SET price = ?, show_time = ?, movie_id = ?, theatre_id = ? WHERE id = ?",
+		schedule.Price, schedule.Showtime, schedule.Movie.ID, schedule.Branch.Theatre.ID, scheduleID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error1": err.Error()})
+		return
+	}
+	schedule.Branch = models.BranchTheatre{}
+	schedulee.Movie = &models.Movie{}
+	schedulee.Branch = models.BranchTheatre{}
+	if err := db.QueryRow("SELECT id, price, show_time, movie_id, theatre_id FROM schedule WHERE id = ?", scheduleID).Scan(
+		&schedulee.ID,
+		&schedulee.Price,
+		&schedulee.Showtime,
+		&schedulee.Movie.ID,
+		&schedulee.Branch.ID,
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error2": err.Error()})
+		return
+	}
+
 	responseData := models.ScheduleResponse{
 		Response: models.Response{
 			Status:  200,
 			Message: "Schedule updated successfully",
 		},
-		Schedule: schedule,
+		Schedule: schedulee,
 	}
 	c.JSON(http.StatusOK, responseData)
 }
