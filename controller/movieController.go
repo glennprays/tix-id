@@ -24,25 +24,69 @@ import (
 // @Router /movies [get]
 
 func GetMovies(c *gin.Context) {
+	var movies []models.Movie
+
+	// Menambahkan kondisi pencarian berdasarkan parameter show_time
+	// if showTime := c.Query("show_time"); showTime != "" {
+	// 	query += " AND show_time = ?"
+	// 	params = append(params, showTime)
+	// }
+
+	// // Menambahkan kondisi pencarian berdasarkan parameter branch
+	// if branch := c.Query("branch"); branch != "" {
+	// 	query += " AND branch = ?"
+	// 	params = append(params, branch)
+	// }
+
+	// // Menambahkan kondisi pencarian berdasarkan parameter rating
+	// if rating := c.Query("rating"); rating != "" {
+	// 	query += " AND rating = ?"
+	// 	params = append(params, rating)
+	// }
+
+	responseData := models.MoviesResponse{
+		Response: models.Response{
+			Status:  200,
+			Message: "Movies retrieved successfully",
+		},
+		Movies: movies,
+	}
+
+	// Send response
+	c.JSON(http.StatusOK, responseData)
+}
+
+// SearchMovies godoc
+// @Summary Search movies by title and genre
+// @Description Search movies by title and genre
+// @Tags Guest
+// @Accept json
+// @Produce json
+// @Param title query string false "Movie title to search"
+// @Param genre query string false "Movie genre to search"
+// @Success 200 {object} models.MoviesResponse
+// @Router /movies/search [get]
+func SearchMovies(c *gin.Context) {
+	
 	db := config.ConnectDB()
 
 	// Ensure the database connection is closed when the function returns
 	defer db.Close()
 
 	// Execute a SELECT query to retrieve all movies from the database
-	rows, err := db.Query("SELECT * FROM Movies")
+	rows, err := db.Query("SELECT * FROM movie")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve movies from database"})
 		return
 	}
 
-	// Iterate over the rows returned from the query and store them in a slice of Movies structs
-	var movies []models.Movies
+	// Iterate over the rows returned from the query and store them in a slice of movie structs
+	var movie []models.Movie
 	for rows.Next() {
-		var branch models.Branch
-		err := rows.Scan(&branch.ID, &branch.Name, &branch.Address)
+		var branch models.Movie
+		err := rows.Scan(&movie.ID, &movie.Name, &movie.Address)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve movie from database"})
 			return
 		}
 
@@ -72,37 +116,8 @@ func GetMovies(c *gin.Context) {
 
 		// Add the current branch to the branches slice
 		branches = append(branches, branch)
-}
+	
 
-// SearchMovies godoc
-// @Summary Search movies by title and genre
-// @Description Search movies by title and genre
-// @Tags Guest
-// @Accept json
-// @Produce json
-// @Param title query string false "Movie title to search"
-// @Param genre query string false "Movie genre to search"
-// @Success 200 {object} models.MoviesResponse
-// @Router /movies/search [get]
-func SearchMovies(c *gin.Context) {
-	db := config.ConnectDB()
-	defer db.Close()
-
-	var movies []models.Movie
-	// title := c.Query("title")
-	// genre := c.Query("genre")
-	// if title != "" && genre != "" {
-	// 	models.DB.Where("title LIKE ? AND genre LIKE ?", "%"+title+"%", "%"+genre+"%").Find(&movies)
-	// } else if title != "" {
-	// 	models.DB.Where("title LIKE ?", "%"+title+"%").Find(&movies)
-	// } else if genre != "" {
-	// 	models.DB.Where("genre LIKE ?", "%"+genre+"%").Find(&movies)
-	// } else {
-	// 	c.JSON(http.StatusBadRequest, models.Response{
-	// 		Status:  http.StatusBadRequest,
-	// 		Message: "Please provide either title or genre to search for movies",
-	// 	})
-	// 	return
 	// }
 
 	responseData := models.MoviesResponse{
