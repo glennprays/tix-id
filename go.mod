@@ -11,7 +11,10 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
+
+require gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 
 require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
