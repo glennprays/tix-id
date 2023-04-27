@@ -223,8 +223,43 @@ func DeleteBranch(c *gin.Context) {
 // @Success 200 {object} models.BranchResponse
 // @Router /branches/{branchId} [put]
 func UpdateBranch(c *gin.Context) {
+	// Connect to database
+	db := config.ConnectDB()
+
+	// Ensure the database connection is closed when the function returns
+	defer db.Close()
 	// branchId := c.Query("branchId")
+	branchId, err := strconv.Atoi(c.Param("branchId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		return
+	}
+
 	var branch models.Branch
+	if err := c.ShouldBindJSON(&branch); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	//id branch
+	branch.ID = branchId
+
+	result, err := db.Exec("UPDATE branch SET name=?, address=? WHERE id=?", branch.Name, branch.Address, branch.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+		return
+	}
+
 	responseData := models.BranchResponse{
 		Response: models.Response{
 			Status:  200,
