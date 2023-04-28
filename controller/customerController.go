@@ -41,7 +41,7 @@ func AddCustomer(c *gin.Context) {
 	// Get the ID of the inserted customer
 	id, err := result.LastInsertId()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted branch"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted customer"})
 		return
 	}
 
@@ -129,7 +129,7 @@ func GetCustomer(c *gin.Context) {
 		if err == sql.ErrNoRows {
 			response := models.Response{
 				Status:  404,
-				Message: "the branch is not found!",
+				Message: "customer is not found!",
 			}
 			c.JSON(http.StatusNotFound, response)
 			return
