@@ -43,7 +43,7 @@ func CreateTheatre(c *gin.Context) {
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted branch"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get ID of inserted theatre"})
 		return
 	}
 	theatre.ID = int(id)
@@ -83,7 +83,7 @@ func UpdateTheatre(c *gin.Context) {
 	// theatreId := c.Query("theatreId")
 	theatreId, err := strconv.Atoi(c.Param("theatreId"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve theatre from database"})
 		return
 	}
 	var theatre models.Theatre
@@ -110,7 +110,7 @@ func UpdateTheatre(c *gin.Context) {
 	}
 
 	if rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Theatre not found"})
 		return
 	}
 
@@ -142,14 +142,14 @@ func DeleteTheatre(c *gin.Context) {
 	// branchId := c.Query("branchId")
 	branchId, err := strconv.Atoi(c.Param("branchId"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Theatre from database"})
 		return
 	}
 	// theatreId := c.Query("theatreId")
 
 	theatreId, err := strconv.Atoi(c.Param("theatreId"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve branches from database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Theatre from database"})
 		return
 	}
 
@@ -162,7 +162,7 @@ func DeleteTheatre(c *gin.Context) {
 	}
 
 	if count == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Theatre not found"})
 		return
 	}
 
@@ -175,7 +175,7 @@ func DeleteTheatre(c *gin.Context) {
 	}
 
 	if counts == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "This Branch doesn't have any theatre yet"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "This Theatre doesn't have any theatre yet"})
 		return
 	}
 
@@ -193,7 +193,7 @@ func DeleteTheatre(c *gin.Context) {
 	}
 
 	if rowsAffected == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete branch"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete theatre"})
 		return
 	}
 	message := fmt.Sprintf("Theatre with id %d in branch with id %d was deleted successfully", theatreId, branchId)
