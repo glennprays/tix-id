@@ -11,15 +11,27 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+func corsPolicy() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		config := cors.DefaultConfig()
+		config.AllowOrigins = []string{c.Request.Host}
+		config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
+		config.AllowHeaders = []string{"Origin"}
+		config.AllowCredentials = true
+		c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Host)
+		if c.Request.Method == "OPTIONS" {
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin")
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+	}
+}
+
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"https://ithb.ac.id"}
-	config.AllowMethods = []string{"GET"}
-	config.AllowHeaders = []string{"Origin"}
-	config.AllowCredentials = true
-	router.Use(cors.New(config))
+	router.Use(corsPolicy())
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -67,6 +79,7 @@ func SetupRouter() *gin.Engine {
 					movieId.DELETE("/", middleware.AuthMiddleware("admin"), controller.DeleteMovie)
 					movieId.PUT("/schedules/:scheduleId", middleware.AuthMiddleware("admin"), controller.UpdateMovieSchedule)
 					movieId.DELETE("/schedules/:scheduleId", middleware.AuthMiddleware("admin"), controller.DeleteSchedule)
+					movieId.POST("/schedules/:scheduleId/seats", middleware.AuthMiddleware("admin"), controller.AddScheduleSeats)
 					movieId.GET("/", controller.GetMovieById)
 				}
 			}

@@ -274,6 +274,84 @@ func CreateMovieSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, responseData)
 }
 
+// AddScheduleSeats godoc
+// @Summary Adding a scheudules seats
+// @Description Add seats for the schedule
+// @Tags Admin
+// @Param movieId path string true "Movie ID"
+// @Param scheduleId path string true "Schedule ID"
+// @Param body body []models.SeatRow true "List of Seat Row Detail"
+// @Success 201 {object} models.Response
+// @Router /movies/{movieId}/schedules/{scheduleId}/seats [post]
+func AddScheduleSeats(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
+	movieId := c.Param("movieId")
+	scheduleId := c.Param("scheduleId")
+
+	var seatRows []models.SeatRow
+	if err := c.ShouldBindJSON(&seatRows); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// check if the schedule exist
+	var count int
+	err := db.QueryRow("select count(*) from schedule where id = ? and movie_id = ?", scheduleId, movieId).Scan(&count)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if count == 0 {
+		response := models.Response{
+			Status:  404,
+			Message: "the schedule is not found!",
+		}
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	for _, seat := range seatRows {
+		// check if the row already exist
+		var lastNumber int
+
+		err = db.QueryRow("select seat_number from seat where row = ? and schedule_id = ? order by seat_number DESC LIMIT 1", seat.Row, scheduleId).Scan(&lastNumber)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				lastNumber = 1
+			} else {
+
+				log.Println(err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		}
+
+		if lastNumber != 1 {
+			lastNumber++
+		}
+
+		for i := (0 + lastNumber); i <= seat.Count; i++ {
+			_, err := db.Exec("insert into seat (row, seat_number, schedule_id) values (?, ?, ?)", seat.Row, i, scheduleId)
+			if err != nil {
+				log.Println(err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		}
+	}
+
+	responseData := models.Response{
+		Status:  200,
+		Message: "Seats inserted successfully!",
+	}
+	c.JSON(http.StatusOK, responseData)
+
+}
+
 // UpdateMovieSchedule godoc
 // @Summary Update a movie schedule
 // @Description Update a schedule for a movie
