@@ -6,3 +6,8 @@ type Seat struct {
 	Number       string `json:"number,omitempty"`
 	Availability *bool  `json:"availability,omitempty"`
 }
+
+type SeatRow struct {
+	Row   string `json:"row"`
+	Count int    `json:"count"`
+}

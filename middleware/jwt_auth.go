@@ -84,21 +84,23 @@ func setCookie(c *gin.Context, value string, exp time.Duration) {
 		Value:    value,
 		HttpOnly: true,
 		Secure:   false,
-		Expires:  time.Now().Add(exp),
+		Expires:  time.Now().UTC().Add(exp),
 		Path:     "/",
 	}
-	http.SetCookie(c.Writer, cookie)
+	c.SetCookie(cookie.Name, cookie.Value, int(cookie.Expires.Sub(time.Now().UTC()).Seconds()), cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
+	log.Println("COOKIES IS SET")
 }
 func ResetUserToken(c *gin.Context) {
 	cookie := &http.Cookie{
 		Name:     tokenName,
 		Value:    "",
-		HttpOnly: true,
+		HttpOnly: false,
 		Secure:   false,
-		Expires:  time.Now(),
+		Expires:  time.Unix(0, 0),
 		Path:     "/",
 	}
-	http.SetCookie(c.Writer, cookie)
+	c.SetCookie(cookie.Name, cookie.Value, int(cookie.Expires.Sub(time.Now().UTC()).Seconds()), cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
+	log.Println("COOKIES IS REMOVED")
 }
 
 func GetUserIdAndRoleFromCookie(c *gin.Context) (uint, string, error) {
