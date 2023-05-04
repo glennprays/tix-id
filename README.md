@@ -46,3 +46,24 @@ To run the database migrations:
   ```
 
 > "Note: Replace `database_address` with `mysql://user:password@tcp(host:port)/dbname?query`"
+
+### Docker
+To start this project in docker:
+1. Build the Docker Compose first
+   ```
+   docker compose build
+   ```
+2. Execute the Docker Compose useing 'up' command
+   ```
+   docker compose up
+   ```
+   this docker will run in port `80`
+
+- Stopping Docker Compose
+  ```
+  docker compose down
+  ```
+- Migrate Database in Docker
+  ```
+  docker run -v {{ migration dir }}:/config/migrations --network host migrate/migrate -path=/config/migrations/ -database mysql://user:password@tcp(host:port)/dbname?query up
+  ```
