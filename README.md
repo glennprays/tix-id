@@ -18,6 +18,7 @@ It also employs various libraries:
 - [gin-swagger](https://github.com/swaggo/gin-swagger)
 - [GoDotEnv](https://github.com/joho/godotenv)
 - [Redis client for Go](github.com/go-redis/redis)
+- [Gomail](https://github.com/go-gomail/gomail)
 
 ## Get Started
 ### API Documentation
