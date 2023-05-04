@@ -116,18 +116,16 @@ func CreateTicket(c *gin.Context) {
 	defer db.Close()
 	// TODO:get by customer id and verify with id in cookies
 	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
-	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
-	// if customerIdParam != int(customerId) {
-	// 	response := models.Response{
-	// 		Status:  200,
-	// 		Message: "The user id didn't matched",
-	// 	}
-	// 	c.JSON(http.StatusOK, response)
-	// 	return
-	// }
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
-	// dummy data
-	customerId := customerIdParam
 	var schedule models.ScheduleTicket
 	if err := c.ShouldBindJSON(&schedule); err != nil {
 		log.Println(err)
@@ -174,7 +172,7 @@ func CreateTicket(c *gin.Context) {
 
 	// verify  seat is not taken yet
 	var count int
-	error = db.QueryRow("select count(*) from ticket where seat_id = ? and schedule_id = ?", seat.ID, schedule.ID).Scan(&count)
+	error = db.QueryRow("select count(t.id) from ticket t join payment p on t.payment_id = p.id where t.seat_id = ? and t.schedule_id = ? and p.payment_status in ('pending', 'completed')", seat.ID, schedule.ID).Scan(&count)
 	if error != nil {
 		log.Println(error)
 		c.JSON(http.StatusBadRequest, gin.H{"error": error.Error()})
@@ -280,18 +278,15 @@ func GetTicket(c *gin.Context) {
 	defer db.Close()
 	// TODO:get by customer id and verify with id in cookies
 	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
-	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
-	// if customerIdParam != int(customerId) {
-	// 	response := models.Response{
-	// 		Status:  200,
-	// 		Message: "The user id didn't matched",
-	// 	}
-	// 	c.JSON(http.StatusOK, response)
-	// 	return
-	// }
-
-	// dummy data
-	customerId := customerIdParam
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
 	// get data
 	query := "SELECT tc.id, se.id, se.row, se.seat_number, p.id, p.amount, p.payment_status, s.id, s.price, s.show_time, m.id, m.title, m.description, m.duration, m.rating, m.release_date, b.id, b.name, b.address, t.id, t.name from ticket tc join seat se on se.id = tc.seat_id join payment p on p.id = tc.payment_id join schedule s on s.id = tc.schedule_id join movie m on m.id = s.movie_id join theatre t on t.id = s.theatre_id join branch b on b.id = t.branch_id where tc.id = ? and tc.customer_id = ?"
@@ -363,18 +358,15 @@ func ConfirmPayment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
-	// if customerIdParam != int(customerId) {
-	// 	response := models.Response{
-	// 		Status:  200,
-	// 		Message: "The user id didn't matched",
-	// 	}
-	// 	c.JSON(http.StatusOK, response)
-	// 	return
-	// }
-
-	// dummy
-	customerId := customerIdParam
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
 	var ticket models.Ticket
 	ticket.ID = ticketId
