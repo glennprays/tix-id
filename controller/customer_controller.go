@@ -118,13 +118,23 @@ func GetCustomer(c *gin.Context) {
 	// Ensure the database connection is closed when the function returns
 	defer db.Close()
 	// customerId := c.Param("customerId")
-	customerId, err := strconv.Atoi(c.Param("customerId"))
+	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve customer from database"})
 		return
 	}
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
+
 	var customer models.Customer
-	err = db.QueryRow("Select username,name,email,phone from customer where id =?", customerId).Scan(&customer.Username, &customer.Name, &customer.Email, &customer.Phone)
+	err = db.QueryRow("Select username,name,email,phone from customer where id =?", customerIdParam).Scan(&customer.Username, &customer.Name, &customer.Email, &customer.Phone)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			response := models.Response{
@@ -138,7 +148,7 @@ func GetCustomer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	customer.ID = customerId
+	customer.ID = customerIdParam
 
 	responseData := models.CustomerResponse{
 		Response: models.Response{
@@ -173,13 +183,22 @@ func UpdateCustomer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	customerId, err := strconv.Atoi(c.Param("customerId"))
+	customerIdParam, err := strconv.Atoi(c.Param("customerId"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve customer from database"})
 		return
 	}
+	customerId, _, _ := middleware.GetUserIdAndRoleFromCookie(c)
+	if customerIdParam != int(customerId) {
+		response := models.Response{
+			Status:  200,
+			Message: "The user id didn't matched",
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
-	result, err := db.Exec("UPDATE customer SET username=?,password=?,name=?,email=?,phone=? WHERE id=?", customer.Username, customer.Password, customer.Name, customer.Email, customer.Phone, customerId)
+	result, err := db.Exec("UPDATE customer SET username=?,password=?,name=?,email=?,phone=? WHERE id=?", customer.Username, customer.Password, customer.Name, customer.Email, customer.Phone, customerIdParam)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -195,7 +214,7 @@ func UpdateCustomer(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
 		return
 	}
-	customer.ID = customerId
+	customer.ID = customerIdParam
 
 	responseData := models.CustomerResponse{
 		Response: models.Response{
