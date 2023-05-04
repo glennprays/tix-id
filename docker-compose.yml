@@ -16,11 +16,10 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       REDIS_ADDR: redis:6379
     ports:
-      - "8080:8080"
+      - "80:8080"
     depends_on:
       - redis
       - db
-    # command: sh -c "redis-server --daemonize yes & migrate -path config/migrations -database \"$DB_USER:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME\" up && ./main"
 
   redis:
     image: redis:6.2-alpine3.17
