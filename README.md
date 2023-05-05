@@ -1,6 +1,6 @@
 
 # TIX-ID Movie Ticketing
----
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 This project aims to develop an application similar to [TIX-ID](https://www.tix.id/), a well-established platform for booking tickets online.
 There is three roles here
